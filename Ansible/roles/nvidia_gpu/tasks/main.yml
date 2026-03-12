@@ -1,0 +1,40 @@
+---
+- name: Ensure Debian non-free repositories are present
+  ansible.builtin.apt_repository:
+    repo: "deb http://deb.debian.org/debian trixie main contrib non-free non-free-firmware"
+    state: present
+
+- name: Install NVIDIA driver stack
+  ansible.builtin.apt:
+    update_cache: true
+    name:
+      - nvidia-driver
+      - nvidia-persistenced
+      - nvidia-container-toolkit
+    state: present
+
+- name: Enable nvidia-persistenced
+  ansible.builtin.systemd:
+    name: nvidia-persistenced
+    enabled: true
+    state: started
+
+- name: Configure Docker daemon for NVIDIA runtime
+  ansible.builtin.copy:
+    dest: /etc/docker/daemon.json
+    mode: "0644"
+    content: |
+      {
+        "runtimes": {
+          "nvidia": {
+            "path": "nvidia-container-runtime",
+            "runtimeArgs": []
+          }
+        },
+        "default-runtime": "nvidia"
+      }
+  notify: Restart docker
+
+- name: Verify GPU on host
+  ansible.builtin.command: nvidia-smi
+  changed_when: false

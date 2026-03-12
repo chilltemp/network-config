@@ -1,0 +1,26 @@
+---
+- name: Validate Portainer Agent secret
+  ansible.builtin.assert:
+    that:
+      - portainer_agent_secret is defined
+      - portainer_agent_secret | length >= 16
+    fail_msg: Set portainer_agent_secret in secrets/vault.yml with a strong value.
+
+- name: Ensure Portainer Agent project directory exists
+  ansible.builtin.file:
+    path: "{{ portainer_agent_project_dir }}"
+    state: directory
+    mode: "0755"
+
+- name: Render Portainer Agent compose file
+  ansible.builtin.template:
+    src: docker-compose.yml.j2
+    dest: "{{ portainer_agent_project_dir }}/docker-compose.yml"
+    mode: "0644"
+
+- name: Deploy Portainer Agent
+  ansible.builtin.command: docker compose up -d
+  args:
+    chdir: "{{ portainer_agent_project_dir }}"
+  register: portainer_agent_compose
+  changed_when: "'Started' in portainer_agent_compose.stdout or 'Creating' in portainer_agent_compose.stdout or 'Recreating' in portainer_agent_compose.stdout"

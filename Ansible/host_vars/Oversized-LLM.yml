@@ -1,0 +1,7 @@
+---
+gpu_model: RTX 3080
+ollama_model_tag: qwen2.5:7b
+
+# Boot label strings must match `efibootmgr` output exactly.
+debian_boot_label: debian
+windows_boot_label: windows boot manager

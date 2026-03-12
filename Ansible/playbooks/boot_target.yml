@@ -1,0 +1,62 @@
+---
+- name: Control boot target mode from Debian
+  hosts: gpu_servers
+  become: true
+  vars:
+    boot_mode: windows_default
+    # Allowed values:
+    # - windows_default: set Windows as persistent default
+    # - debian_persistent: set Debian as persistent default
+    # - debian_next_boot: set Debian for next boot only
+  tasks:
+    - name: Validate requested boot mode
+      ansible.builtin.assert:
+        that:
+          - boot_mode in ['windows_default', 'debian_persistent', 'debian_next_boot']
+        fail_msg: "Invalid boot_mode. Use windows_default, debian_persistent, or debian_next_boot."
+
+    - name: Ensure efibootmgr is installed
+      ansible.builtin.apt:
+        name: efibootmgr
+        state: present
+        update_cache: true
+
+    - name: Read EFI boot entries
+      ansible.builtin.command: efibootmgr
+      register: efibootmgr_output
+      changed_when: false
+
+    - name: Resolve Debian and Windows boot numbers
+      ansible.builtin.set_fact:
+        debian_bootnum: >-
+          {{
+            (efibootmgr_output.stdout | lower | regex_search('boot([0-9a-f]{4}).*' ~ (debian_boot_label | lower), '\\1'))
+            | default('', true)
+          }}
+        windows_bootnum: >-
+          {{
+            (efibootmgr_output.stdout | lower | regex_search('boot([0-9a-f]{4}).*' ~ (windows_boot_label | lower), '\\1'))
+            | default('', true)
+          }}
+
+    - name: Fail if boot entries are missing
+      ansible.builtin.fail:
+        msg: >-
+          Could not find one or both boot entries. Check host_vars labels: debian_boot_label={{ debian_boot_label }}, windows_boot_label={{ windows_boot_label }}.
+      when: debian_bootnum == '' or windows_bootnum == ''
+
+    - name: Set Windows as persistent default
+      ansible.builtin.command: "efibootmgr -o {{ windows_bootnum }},{{ debian_bootnum }}"
+      when: boot_mode == 'windows_default'
+
+    - name: Set Debian as persistent default
+      ansible.builtin.command: "efibootmgr -o {{ debian_bootnum }},{{ windows_bootnum }}"
+      when: boot_mode == 'debian_persistent'
+
+    - name: Set Debian for next boot only
+      ansible.builtin.command: "efibootmgr -n {{ debian_bootnum }}"
+      when: boot_mode == 'debian_next_boot'
+
+    - name: Show resulting EFI state
+      ansible.builtin.command: efibootmgr
+      changed_when: false

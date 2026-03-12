@@ -1,0 +1,8 @@
+---
+- name: Deploy Portainer Agent
+  hosts: gpu_servers
+  become: true
+  vars_files:
+    - ../secrets/vault.yml
+  roles:
+    - role: portainer_agent

@@ -1,0 +1,11 @@
+---
+- name: Provision Oversized-LLM base stack
+  hosts: gpu_servers
+  become: true
+  vars_files:
+    - ../secrets/vault.yml
+  roles:
+    - role: base
+    - role: docker
+    - role: nvidia_gpu
+    - role: tailscale

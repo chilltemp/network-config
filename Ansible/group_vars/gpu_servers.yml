@@ -1,0 +1,17 @@
+---
+allowed_containers:
+  - ollama
+  - portainer-agent
+
+tailscale_subnet_cidr: 100.64.0.0/10
+management_lan_cidr: 192.168.1.0/24
+portainer_server_lan_ip: 192.168.1.10
+
+ollama_port: 11434
+portainer_agent_port: 9001
+
+ollama_image: ollama/ollama:0.12.2
+portainer_agent_image: portainer/agent:2.27.9
+
+ollama_project_dir: /opt/ollama
+portainer_agent_project_dir: /opt/portainer-agent

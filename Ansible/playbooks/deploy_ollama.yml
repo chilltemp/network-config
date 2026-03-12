@@ -1,0 +1,6 @@
+---
+- name: Deploy Ollama service
+  hosts: gpu_servers
+  become: true
+  roles:
+    - role: ollama_service

@@ -1,0 +1,34 @@
+---
+- name: Ensure Ollama project directory exists
+  ansible.builtin.file:
+    path: "{{ ollama_project_dir }}"
+    state: directory
+    mode: "0755"
+
+- name: Render Ollama compose file
+  ansible.builtin.template:
+    src: docker-compose.yml.j2
+    dest: "{{ ollama_project_dir }}/docker-compose.yml"
+    mode: "0644"
+
+- name: Deploy Ollama
+  ansible.builtin.command: docker compose up -d
+  args:
+    chdir: "{{ ollama_project_dir }}"
+  register: ollama_compose
+  changed_when: "'Started' in ollama_compose.stdout or 'Creating' in ollama_compose.stdout or 'Recreating' in ollama_compose.stdout"
+
+- name: Wait for Ollama API
+  ansible.builtin.uri:
+    url: "http://127.0.0.1:{{ ollama_port }}/api/tags"
+    method: GET
+    status_code: 200
+  register: ollama_health
+  retries: 20
+  delay: 3
+  until: ollama_health.status == 200
+
+- name: Pull default model
+  ansible.builtin.command: "docker exec ollama_server ollama pull {{ ollama_model_tag }}"
+  register: ollama_pull
+  changed_when: "'pulling' in (ollama_pull.stdout | lower) or 'downloading' in (ollama_pull.stdout | lower)"
