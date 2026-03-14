@@ -14,25 +14,31 @@
     state: present
 
 - name: Enable UFW default deny incoming
-  ansible.builtin.command: ufw default deny incoming
+  ansible.builtin.command:
+    cmd: ufw default deny incoming
   changed_when: false
 
 - name: Enable UFW default allow outgoing
-  ansible.builtin.command: ufw default allow outgoing
+  ansible.builtin.command:
+    cmd: ufw default allow outgoing
   changed_when: false
 
 - name: Allow SSH over management LAN
-  ansible.builtin.command: "ufw allow from {{ management_lan_cidr }} to any port 22 proto tcp"
+  ansible.builtin.command:
+    cmd: "ufw allow from {{ management_lan_cidr }} to any port 22 proto tcp"
   changed_when: false
 
 - name: Allow Ollama over Tailscale subnet
-  ansible.builtin.command: "ufw allow from {{ tailscale_subnet_cidr }} to any port {{ ollama_port }} proto tcp"
+  ansible.builtin.command:
+    cmd: "ufw allow from {{ tailscale_subnet_cidr }} to any port {{ ollama_port }} proto tcp"
   changed_when: false
 
 - name: Allow Portainer Agent from central Portainer Server LAN IP
-  ansible.builtin.command: "ufw allow from {{ portainer_server_lan_ip }} to any port {{ portainer_agent_port }} proto tcp"
+  ansible.builtin.command:
+    cmd: "ufw allow from {{ portainer_server_lan_ip }} to any port {{ portainer_agent_port }} proto tcp"
   changed_when: false
 
 - name: Enable UFW
-  ansible.builtin.command: ufw --force enable
+  ansible.builtin.command:
+    cmd: ufw --force enable
   changed_when: false

@@ -1,7 +1,6 @@
 ---
-tailscale_subnet_cidr: 100.64.0.0/10
 management_lan_cidr: 192.168.1.0/24
 portainer_server_lan_ip: 192.168.1.10
-
+tailscale_subnet_cidr: 100.64.0.0/10
 ollama_port: 11434
 portainer_agent_port: 9001

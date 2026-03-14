@@ -30,9 +30,19 @@
     enabled: true
     state: started
 
+- name: Validate Tailscale auth key format
+  ansible.builtin.assert:
+    that:
+      - tailscale_auth_key is match('^tskey-auth-')
+    fail_msg: "tailscale_auth_key must be a Tailscale node auth key (starts with 'tskey-auth-'), not an API key."
+  when:
+    - tailscale_auth_key is defined
+    - tailscale_auth_key | length > 0
+
 - name: Join tailnet if auth key is provided
   ansible.builtin.command: "tailscale up --auth-key={{ tailscale_auth_key }} --ssh"
   register: tailscale_up
+  no_log: true
   changed_when: "'Logged in' in tailscale_up.stdout or 'Success' in tailscale_up.stdout"
   failed_when:
     - tailscale_up.rc != 0

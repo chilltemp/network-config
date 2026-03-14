@@ -1,4 +1,2 @@
 ---
 - import_playbook: provision_gpu_server.yml
-- import_playbook: deploy_portainer.yml
-- import_playbook: deploy_ollama.yml

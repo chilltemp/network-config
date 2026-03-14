@@ -4,20 +4,68 @@
     repo: "deb http://deb.debian.org/debian trixie main contrib non-free non-free-firmware"
     state: present
 
-- name: Install NVIDIA driver stack
+- name: Install NVIDIA kernel build prerequisites
+  ansible.builtin.apt:
+    update_cache: true
+    name:
+      - linux-headers-amd64
+      - dkms
+      - build-essential
+    state: present
+
+- name: Install NVIDIA driver and persistenced
   ansible.builtin.apt:
     update_cache: true
     name:
       - nvidia-driver
       - nvidia-persistenced
+    state: present
+  register: nvidia_driver_install
+
+- name: Reboot to load NVIDIA kernel module
+  ansible.builtin.reboot:
+    reboot_timeout: 300
+  when: nvidia_driver_install.changed
+
+- name: Try loading NVIDIA kernel module
+  ansible.builtin.command:
+    cmd: modprobe nvidia
+  register: nvidia_modprobe
+  failed_when: false
+  changed_when: false
+
+- name: Download NVIDIA container toolkit GPG key
+  ansible.builtin.get_url:
+    url: https://nvidia.github.io/libnvidia-container/gpgkey
+    dest: /etc/apt/keyrings/nvidia-container-toolkit.asc
+    mode: "0644"
+
+- name: Get system architecture
+  ansible.builtin.command:
+    cmd: dpkg --print-architecture
+  register: nvidia_arch
+  changed_when: false
+
+- name: Add NVIDIA container toolkit apt repository
+  ansible.builtin.apt_repository:
+    repo: "deb [signed-by=/etc/apt/keyrings/nvidia-container-toolkit.asc] https://nvidia.github.io/libnvidia-container/stable/deb/{{ nvidia_arch.stdout }} /"
+    state: present
+    filename: nvidia-container-toolkit
+
+- name: Install NVIDIA container toolkit
+  ansible.builtin.apt:
+    update_cache: true
+    name:
       - nvidia-container-toolkit
     state: present
 
-- name: Enable nvidia-persistenced
+- name: Enable and start nvidia-persistenced (best effort)
   ansible.builtin.systemd:
     name: nvidia-persistenced
     enabled: true
     state: started
+  register: nvidia_persistenced_service
+  failed_when: false
 
 - name: Configure Docker daemon for NVIDIA runtime
   ansible.builtin.copy:
@@ -35,6 +83,92 @@
       }
   notify: Restart docker
 
-- name: Verify GPU on host
-  ansible.builtin.command: nvidia-smi
+- name: Verify GPU on host with nvidia-smi
+  ansible.builtin.command:
+    cmd: nvidia-smi
+  register: nvidia_smi_check
+  failed_when: false
   changed_when: false
+
+- name: Reboot once when NVIDIA driver is not active
+  ansible.builtin.reboot:
+    reboot_timeout: 300
+  when: nvidia_smi_check.rc != 0
+
+- name: Restart nvidia-persistenced after recovery reboot (best effort)
+  ansible.builtin.systemd:
+    name: nvidia-persistenced
+    enabled: true
+    state: started
+  register: nvidia_persistenced_service_after_reboot
+  failed_when: false
+  when: nvidia_smi_check.rc != 0
+
+- name: Re-check GPU on host after recovery reboot
+  ansible.builtin.command:
+    cmd: nvidia-smi
+  register: nvidia_smi_check_after_reboot
+  failed_when: false
+  changed_when: false
+  when: nvidia_smi_check.rc != 0
+
+- name: Capture loaded NVIDIA modules when GPU check fails
+  ansible.builtin.command:
+    cmd: lsmod
+  register: nvidia_lsmod
+  changed_when: false
+  failed_when: false
+  when: (nvidia_smi_check_after_reboot.rc | default(nvidia_smi_check.rc)) != 0
+
+- name: Capture DKMS status when GPU check fails
+  ansible.builtin.command:
+    cmd: dkms status
+  register: nvidia_dkms_status
+  changed_when: false
+  failed_when: false
+  when: (nvidia_smi_check_after_reboot.rc | default(nvidia_smi_check.rc)) != 0
+
+- name: Collect nvidia-persistenced status when GPU check fails
+  ansible.builtin.command:
+    cmd: systemctl --no-pager -l status nvidia-persistenced.service
+  register: nvidia_persistenced_status
+  changed_when: false
+  failed_when: false
+  when: (nvidia_smi_check_after_reboot.rc | default(nvidia_smi_check.rc)) != 0
+
+- name: Collect nvidia-persistenced journal when GPU check fails
+  ansible.builtin.command:
+    cmd: journalctl -u nvidia-persistenced.service -n 80 --no-pager
+  register: nvidia_persistenced_journal
+  changed_when: false
+  failed_when: false
+  when: (nvidia_smi_check_after_reboot.rc | default(nvidia_smi_check.rc)) != 0
+
+- name: Fail when GPU is not available
+  ansible.builtin.fail:
+    msg: |
+      NVIDIA driver check failed (`nvidia-smi` returned rc={{ nvidia_smi_check_after_reboot.rc | default(nvidia_smi_check.rc) }}).
+      stdout:
+      {{ nvidia_smi_check_after_reboot.stdout | default(nvidia_smi_check.stdout | default('')) }}
+      stderr:
+      {{ nvidia_smi_check_after_reboot.stderr | default(nvidia_smi_check.stderr | default('')) }}
+
+      nvidia-persistenced status:
+      {{ nvidia_persistenced_status.stdout | default('not collected') }}
+
+      nvidia-persistenced journal:
+      {{ nvidia_persistenced_journal.stdout | default('not collected') }}
+
+        modprobe nvidia:
+        rc={{ nvidia_modprobe.rc | default('not run') }}
+        stdout:
+        {{ nvidia_modprobe.stdout | default('') }}
+        stderr:
+        {{ nvidia_modprobe.stderr | default('') }}
+
+        lsmod (filtered for nvidia):
+        {{ (nvidia_lsmod.stdout | default('')) | regex_findall('^.*nvidia.*$', multiline=True) | join('\n') }}
+
+        dkms status:
+        {{ nvidia_dkms_status.stdout | default('not collected') }}
+  when: (nvidia_smi_check_after_reboot.rc | default(nvidia_smi_check.rc)) != 0

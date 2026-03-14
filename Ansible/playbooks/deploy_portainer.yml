@@ -1,8 +1,11 @@
 ---
-- name: Deploy Portainer Agent
+- name: Stack deployment is managed in Portainer
   hosts: gpu_servers
-  become: true
-  vars_files:
-    - ../secrets/vault.yml
-  roles:
-    - role: portainer_agent
+  gather_facts: false
+  tasks:
+    - name: Inform operator to deploy Portainer Agent stack from repository compose file
+      ansible.builtin.fail:
+        msg: |
+          Container/stack lifecycle is intentionally not managed by Ansible.
+          Deploy the Portainer Agent stack from Portainer UI/API using:
+          - portainer/docker-compose.yml

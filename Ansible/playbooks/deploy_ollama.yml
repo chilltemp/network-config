@@ -1,6 +1,11 @@
 ---
-- name: Deploy Ollama service
+- name: Stack deployment is managed in Portainer
   hosts: gpu_servers
-  become: true
-  roles:
-    - role: ollama_service
+  gather_facts: false
+  tasks:
+    - name: Inform operator to deploy Ollama stack from repository compose file
+      ansible.builtin.fail:
+        msg: |
+          Container/stack lifecycle is intentionally not managed by Ansible.
+          Deploy the Ollama stack from Portainer UI/API using:
+          - ollama/docker-compose.yml
