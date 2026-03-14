@@ -15,6 +15,7 @@ Runs Ollama with GPU access and persistent model storage.
 ## Optional Environment Variables
 
 - `OLLAMA_IMAGE` (default: `ollama/ollama:0.12.2`)
+ - `OLLAMA_IMAGE` (default: `ollama/ollama:0.17.7`)
 - `OLLAMA_CONTAINER_NAME` (default: `ollama_server`)
 - `OLLAMA_PORT` (default: `11434`)
 - `OLLAMA_GPU_COUNT` (default: `1`)
@@ -39,3 +40,6 @@ sudo mkdir -p /data/ollama/storage
 ## Notes
 
 - Health check uses `ollama list` because the upstream image may not include `curl`.
+
+- Testing with Talescale IP
+`curl http://100.86.151.98:11434/api/tags`
