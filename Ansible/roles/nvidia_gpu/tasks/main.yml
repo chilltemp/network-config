@@ -13,13 +13,13 @@
       - build-essential
     state: present
 
-- name: Install NVIDIA driver and persistenced
+- name: Install or upgrade NVIDIA driver and persistenced
   ansible.builtin.apt:
     update_cache: true
     name:
       - nvidia-driver
       - nvidia-persistenced
-    state: present
+    state: latest
   register: nvidia_driver_install
 
 - name: Reboot to load NVIDIA kernel module
@@ -52,12 +52,12 @@
     state: present
     filename: nvidia-container-toolkit
 
-- name: Install NVIDIA container toolkit
+- name: Install or upgrade NVIDIA container toolkit
   ansible.builtin.apt:
     update_cache: true
     name:
       - nvidia-container-toolkit
-    state: present
+    state: latest
 
 - name: Enable and start nvidia-persistenced (best effort)
   ansible.builtin.systemd:

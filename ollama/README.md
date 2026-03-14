@@ -35,3 +35,7 @@ sudo mkdir -p /data/ollama/storage
 - Ollama should be reachable only via Tailscale.
 - Use host firewall to allow `11434/tcp` only from `100.64.0.0/10`.
 - Compose binds Ollama to `OLLAMA_BIND_IP` to avoid exposing on all host interfaces.
+
+## Notes
+
+- Health check uses `ollama list` because the upstream image may not include `curl`.

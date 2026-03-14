@@ -22,7 +22,7 @@ services:
               count: ${OLLAMA_GPU_COUNT:-1}
               capabilities: [gpu]
     healthcheck:
-      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:11434/api/tags"]
+      test: ["CMD", "ollama", "list"]
       interval: 30s
       timeout: 10s
       retries: 5

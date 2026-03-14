@@ -11,6 +11,7 @@
       - python3-pip
       - python3-docker
       - jq
+      - rsync
     state: present
 
 - name: Enable UFW default deny incoming
