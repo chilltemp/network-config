@@ -12,6 +12,9 @@ services:
       - "${OLLAMA_BIND_IP:?OLLAMA_BIND_IP not set}:${OLLAMA_PORT:-11434}:11434"
     environment:
       - OLLAMA_HOST=0.0.0.0
+      - OLLAMA_PORT=${OLLAMA_PORT:-11434}
+      - OLLAMA_LOG_LEVEL=${OLLAMA_LOG_LEVEL:-info}  
+      - OLLAMA_CONTEXT_LENGTH=${OLLAMA_CONTEXT_LENGTH:-4096}
     volumes:
       - ${HOST_DATA_PATH:-/data/ollama}/storage:/root/.ollama
     deploy:

@@ -22,16 +22,16 @@ Before running Ansible, ensure SSH is configured on the Debian host.
    ```
 
 2. **Configure SSH for Ansible user (run as root):**
-   - Create user if needed: `useradd -m -s /bin/bash ansible_user`
+   - Create user if needed: `useradd -m -s /bin/bash ansible-user`
    - Install `sudo` only if you want sudo-based privilege escalation:
      ```bash
      apt-get install -y sudo
-     usermod -aG sudo ansible_user
+     usermod -aG sudo ansible-user
      ```
-   - If you install sudo and want passwordless sudo, create `/etc/sudoers.d/ansible_user`:
+   - If you install sudo and want passwordless sudo, create `/etc/sudoers.d/ansible-user`:
      ```bash
-     echo 'ansible_user ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/ansible_user
-     chmod 440 /etc/sudoers.d/ansible_user
+     echo 'ansible-user ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/ansible-user
+     chmod 440 /etc/sudoers.d/ansible-user
      ```
 
 ### On your control machine (macOS):
@@ -45,7 +45,7 @@ Before running Ansible, ensure SSH is configured on the Debian host.
 2. **Copy public key to Oversized-LLM:**
 
    ```bash
-   ssh-copy-id -i ~/.ssh/id_ed25519.pub -p 22 ansible_user@<oversized-llm-ip>
+   ssh-copy-id -i ~/.ssh/id_ed25519.pub -p 22 ansible-user@<oversized-llm-ip>
    ```
 
    Replace `<oversized-llm-ip>` with the Debian host's LAN IP address.
@@ -53,14 +53,15 @@ Before running Ansible, ensure SSH is configured on the Debian host.
 3. **Test SSH connectivity:**
 
    ```bash
-   ssh -i ~/.ssh/id_ed25519 ansible_user@<oversized-llm-ip> "echo 'SSH works!'"
+   ssh -i ~/.ssh/id_ed25519 ansible-user@<oversized-llm-ip> "echo 'SSH works!'"
 
-   ssh -i /Users/chill/.ssh/id_ed25519 -p 22 'ansible_user@192.168.1.38'
+   ssh -i /Users/chill/.ssh/id_ed25519 -p 22 'ansible-user@192.168.1.150'
+
    ```
 
 4. **Verify privilege escalation path (optional):**
    ```bash
-   ssh -i ~/.ssh/id_ed25519 ansible_user@<oversized-llm-ip> "su -c 'whoami'"
+   ssh -i ~/.ssh/id_ed25519 ansible-user@<oversized-llm-ip> "su -c 'whoami'"
    ```
    If using sudo instead, test with: `sudo whoami`.
 
@@ -75,7 +76,7 @@ brew install ansible
 Set host values in `inventory/hosts.yml`:
 
 - Replace `<oversized-llm-ip>` with the Debian host's LAN IP address
-- Replace `ansible_user` with the SSH user (created in prerequisites)
+- Replace `ansible-user` with the SSH user (created in prerequisites)
 - Ensure `ansible_ssh_private_key_file` points to your SSH private key (e.g., `~/.ssh/id_ed25519`)
 
 If your Debian host does **not** use sudo, add these host vars in `inventory/hosts.yml`:

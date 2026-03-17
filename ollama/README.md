@@ -14,8 +14,7 @@ Runs Ollama with GPU access and persistent model storage.
 
 ## Optional Environment Variables
 
-- `OLLAMA_IMAGE` (default: `ollama/ollama:0.12.2`)
- - `OLLAMA_IMAGE` (default: `ollama/ollama:0.17.7`)
+- `OLLAMA_IMAGE` (default: `ollama/ollama:0.17.7`)
 - `OLLAMA_CONTAINER_NAME` (default: `ollama_server`)
 - `OLLAMA_PORT` (default: `11434`)
 - `OLLAMA_GPU_COUNT` (default: `1`)
@@ -31,6 +30,49 @@ sudo mkdir -p /data/ollama/storage
 
 - Docker with NVIDIA runtime available.
 
+## Troubleshooting
+
+If stack deploy fails with:
+
+`could not select device driver "nvidia" with capabilities: [[gpu]]`
+
+the host Docker engine does not currently have a working NVIDIA runtime.
+
+### Quick checks on the host
+
+```bash
+nvidia-smi
+docker info | grep -i runtime
+docker run --rm --gpus all nvidia/cuda:12.4.1-base-ubuntu22.04 nvidia-smi
+```
+
+Expected results:
+
+- `nvidia-smi` shows your GPU details.
+- `docker info` lists `nvidia` in available runtimes.
+- The CUDA test container prints GPU info.
+
+### Fix with this repo's Ansible
+
+From [Ansible](../Ansible), run:
+
+```bash
+ansible-playbook playbooks/provision_gpu_server.yml --ask-vault-pass
+```
+
+This installs/updates the NVIDIA driver and container toolkit, configures Docker runtime, and validates GPU availability.
+
+### If Docker runtime still missing
+
+Restart Docker and retry:
+
+```bash
+sudo systemctl restart docker
+docker info | grep -i runtime
+```
+
+Then redeploy the stack in Portainer.
+
 ## Security intent
 
 - Ollama should be reachable only via Tailscale.
@@ -42,4 +84,4 @@ sudo mkdir -p /data/ollama/storage
 - Health check uses `ollama list` because the upstream image may not include `curl`.
 
 - Testing with Talescale IP
-`curl http://100.86.151.98:11434/api/tags`
+  `curl http://100.86.151.98:11434/api/tags`
