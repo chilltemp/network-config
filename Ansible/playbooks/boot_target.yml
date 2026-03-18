@@ -15,6 +15,19 @@
           - boot_mode in ['windows_default', 'debian_persistent', 'debian_next_boot']
         fail_msg: "Invalid boot_mode. Use windows_default, debian_persistent, or debian_next_boot."
 
+    - name: Load host-specific boot variables
+      ansible.builtin.include_vars:
+        file: "{{ playbook_dir }}/../host_vars/{{ inventory_hostname }}.yml"
+
+    - name: Validate required boot labels
+      ansible.builtin.assert:
+        that:
+          - (lookup('ansible.builtin.vars', 'debian_boot_label', default='') | trim) != ''
+          - (lookup('ansible.builtin.vars', 'windows_boot_label', default='') | trim) != ''
+        fail_msg: >-
+          Missing required boot labels for {{ inventory_hostname }}. Set debian_boot_label and
+          windows_boot_label in host_vars.
+
     - name: Ensure efibootmgr is installed
       ansible.builtin.apt:
         name: efibootmgr
@@ -26,23 +39,44 @@
       register: efibootmgr_output
       changed_when: false
 
-    - name: Resolve Debian and Windows boot numbers
+    - name: Resolve Debian boot number
       ansible.builtin.set_fact:
         debian_bootnum: >-
           {{
-            (efibootmgr_output.stdout | lower | regex_search('boot([0-9a-f]{4}).*' ~ (debian_boot_label | lower), '\\1'))
-            | default('', true)
+            (
+              efibootmgr_output.stdout_lines
+              | map('lower')
+              | select('search', debian_boot_label_value)
+              | list
+              | first
+              | default('')
+              | regex_replace('^boot([0-9a-f]{4}).*$', '\\1')
+            )
           }}
+      vars:
+        debian_boot_label_value: "{{ lookup('ansible.builtin.vars', 'debian_boot_label', default='') | lower }}"
+
+    - name: Resolve Windows boot number
+      ansible.builtin.set_fact:
         windows_bootnum: >-
           {{
-            (efibootmgr_output.stdout | lower | regex_search('boot([0-9a-f]{4}).*' ~ (windows_boot_label | lower), '\\1'))
-            | default('', true)
+            (
+              efibootmgr_output.stdout_lines
+              | map('lower')
+              | select('search', windows_boot_label_value)
+              | list
+              | first
+              | default('')
+              | regex_replace('^boot([0-9a-f]{4}).*$', '\\1')
+            )
           }}
+      vars:
+        windows_boot_label_value: "{{ lookup('ansible.builtin.vars', 'windows_boot_label', default='') | lower }}"
 
     - name: Fail if boot entries are missing
       ansible.builtin.fail:
         msg: >-
-          Could not find one or both boot entries. Check host_vars labels: debian_boot_label={{ debian_boot_label }}, windows_boot_label={{ windows_boot_label }}.
+          Could not find one or both boot entries. Check host_vars labels: debian_boot_label={{ lookup('ansible.builtin.vars', 'debian_boot_label', default='') }}, windows_boot_label={{ lookup('ansible.builtin.vars', 'windows_boot_label', default='') }}.
       when: debian_bootnum == '' or windows_bootnum == ''
 
     - name: Set Windows as persistent default

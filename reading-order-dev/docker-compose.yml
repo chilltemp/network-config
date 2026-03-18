@@ -1,0 +1,57 @@
+
+# Needs permissions to the DATA_*_PATH directories:
+#   mkdir -p /data/linkwarden/data
+#   mkdir -p /data/linkwarden/postgres
+#   mkdir -p /data/linkwarden/meilisearch
+#   sudo chown -R 1000:1000 /data/linkwarden
+
+
+version: '3.8'
+services:
+  postgres:
+    image: postgres:17
+    restart: always
+    environment:
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:?POSTGRES_PASSWORD not set}
+      - POSTGRES_USER=${POSTGRES_USER:?POSTGRES_USER not set}
+      - POSTGRES_DB=${POSTGRES_DB?-postgres}
+    volumes:
+      - ${HOST_DATA_PATH:-/data/reading-order-dev}/postgres:/var/lib/postgresql/data
+    networks:
+      - proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.tcp.routers.postgres.rule=HostSNI(`${FQDN:?FQDN not set}`)"
+      - "traefik.tcp.routers.postgres.tls=true"
+      - "traefik.tcp.routers.postgres.entrypoints=postgres"
+      - "traefik.tcp.routers.postgres.tls.certresolver=cloudflare"
+      - "traefik.tcp.routers.postgres.service=postgres"
+      - "traefik.tcp.services.postgres.loadbalancer.server.port=5432"
+
+  pgadmin:
+    image: dpage/pgadmin4:9.11.0
+    # Don't auto start pgAdmin, as it's not needed for normal operation
+    restart: no
+    environment:
+      # Email and password are REQUIRED for the pgAdmin.  I didn't make the required for this file because
+      # most users won't need pgAdmin.
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
+      SCRIPT_NAME: /pgadmin
+    networks:
+      - linkwarden
+      - proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.pgadmin.tls=true"
+      - "traefik.http.routers.pgadmin.tls.certresolver=cloudflare"
+      - "traefik.http.routers.pgadmin.entrypoints=websecure"
+      - "traefik.http.routers.pgadmin.rule=Host(`${FQDN:?FQDN not set}`) && PathPrefix(`/pgadmin`)"
+      - "traefik.http.services.pgadmin.loadbalancer.server.port=80"
+      - "traefik.http.routers.pgadmin.priority=100"
+
+networks:
+  proxy:
+    name: proxy
+
+    

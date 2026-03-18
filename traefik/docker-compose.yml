@@ -34,6 +34,7 @@ services:
     ports:
       - "80:80"
       - "443:443"
+      - "5432:5432"
       # - "8080:8080"
 
     environment:
@@ -72,6 +73,13 @@ services:
       - "--entrypoints.port3000.http.tls.domains[0].sans=*.${DOMAIN:?DOMAIN not set}"
       - "--entrypoints.port3000.http.tls.domains[1].main=${FQDN:?FQDN not set}"
       - "--entrypoints.port3000.http.tls.domains[1].sans=*.${FQDN:?FQDN not set}"
+
+      - "--entrypoints.postgres.address=:5432"
+      - "--entrypoints.postgres.http.tls=true"
+      - "--entrypoints.postgres.http.tls.domains[0].main=${DOMAIN:?DOMAIN not set}"
+      - "--entrypoints.postgres.http.tls.domains[0].sans=*.${DOMAIN:?DOMAIN not set}"
+      - "--entrypoints.postgres.http.tls.domains[1].main=${FQDN:?FQDN not set}"
+      - "--entrypoints.postgres.http.tls.domains[1].sans=*.${FQDN:?FQDN not set}"
 
       # Attach the static configuration tls.yaml file that contains the tls configuration settings
       # - "--providers.file.filename=/network-config/sync/traefik/tls.yml"
