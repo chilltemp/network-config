@@ -39,7 +39,6 @@ services:
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
       SCRIPT_NAME: /pgadmin
     networks:
-      - linkwarden
       - proxy
     labels:
       - "traefik.enable=true"
