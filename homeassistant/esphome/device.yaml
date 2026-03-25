@@ -1,0 +1,13 @@
+# common
+packages:
+  base: !include
+    file: common/base_esp32dev.yaml
+    vars:
+      node_name: lights3
+  lightbar: !include
+    file: light_bar_bat_signal.yaml
+    vars:
+      boot_brightness: 30%
+      full_brightness: 100%
+      medium_brightness: 50%
+      high_brightness: 75%

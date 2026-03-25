@@ -1,0 +1,96 @@
+# Fooocus + Open WebUI + Ollama stack (deploy via Portainer Stack UI)
+# Runtime settings are provided as environment variables in Portainer.
+
+version: '3.8'
+
+services:
+  ollama:
+    image: ${OLLAMA_IMAGE:-ollama/ollama:0.17.7}
+    container_name: ${OLLAMA_CONTAINER_NAME:-focuuus_ollama}
+    restart: unless-stopped
+    environment:
+      - OLLAMA_HOST=0.0.0.0
+      - OLLAMA_PORT=11434
+      - OLLAMA_CONTEXT_LENGTH=${OLLAMA_CONTEXT_LENGTH:-4096}
+    volumes:
+      - ${HOST_DATA_PATH:-/data/focuuus-ai}/ollama:/root/.ollama
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: ${OLLAMA_GPU_COUNT:-1}
+              capabilities: [gpu]
+    networks:
+      - focuuus-ai
+
+  open-webui:
+    image: ${OPEN_WEBUI_IMAGE:-ghcr.io/open-webui/open-webui:main}
+    container_name: ${OPEN_WEBUI_CONTAINER_NAME:-focuuus_open_webui}
+    restart: unless-stopped
+    depends_on:
+      - ollama
+    environment:
+      - OLLAMA_BASE_URL=${OLLAMA_BASE_URL:-http://ollama:11434}
+      - WEBUI_SECRET_KEY=${WEBUI_SECRET_KEY:?WEBUI_SECRET_KEY not set}
+      - ENABLE_SIGNUP=${ENABLE_SIGNUP:-false}
+    volumes:
+      - ${HOST_DATA_PATH:-/data/focuuus-ai}/open-webui:/app/backend/data
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    networks:
+      - proxy
+      - focuuus-ai
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.open-webui.tls=true"
+      - "traefik.http.routers.open-webui.tls.certresolver=${TRAEFIK_CERTRESOLVER:-cloudflare}"
+      - "traefik.http.routers.open-webui.entrypoints=websecure"
+      - "traefik.http.routers.open-webui.rule=Host(`${FQDN_WEBUI:?FQDN_WEBUI not set}`)"
+      - "traefik.http.services.open-webui.loadbalancer.server.port=8080"
+
+  fooocus:
+    image: ghcr.io/lllyasviel/fooocus
+    container_name: ${FOOOCUS_CONTAINER_NAME:-focuuus_fooocus}
+    restart: unless-stopped
+    environment:
+      - CMDARGS=--listen
+      - DATADIR=/content/data
+      - config_path=/content/data/config.txt
+      - config_example_path=/content/data/config_modification_tutorial.txt
+      - path_checkpoints=/content/data/models/checkpoints/
+      - path_loras=/content/data/models/loras/
+      - path_embeddings=/content/data/models/embeddings/
+      - path_vae_approx=/content/data/models/vae_approx/
+      - path_upscale_models=/content/data/models/upscale_models/
+      - path_inpaint=/content/data/models/inpaint/
+      - path_controlnet=/content/data/models/controlnet/
+      - path_clip_vision=/content/data/models/clip_vision/
+      - path_fooocus_expansion=/content/data/models/prompt_expansion/fooocus_expansion/
+      - path_outputs=/content/app/outputs/
+    volumes:
+      - ${HOST_DATA_PATH:-/data/focuuus-ai}/fooocus:/content/data
+    tty: true
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: ${FOOOCUS_GPU_COUNT:-1}
+              capabilities: [gpu]
+    networks:
+      - proxy
+      - focuuus-ai
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.fooocus.tls=true"
+      - "traefik.http.routers.fooocus.tls.certresolver=${TRAEFIK_CERTRESOLVER:-cloudflare}"
+      - "traefik.http.routers.fooocus.entrypoints=websecure"
+      - "traefik.http.routers.fooocus.rule=Host(`${FQDN_FOOOCUS:?FQDN_FOOOCUS not set}`)"
+      - "traefik.http.services.fooocus.loadbalancer.server.port=7865"
+
+networks:
+  proxy:
+    name: proxy
+  focuuus-ai:
+    name: focuuus-ai

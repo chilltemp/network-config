@@ -1,0 +1,134 @@
+defaults:
+  boot_brightness: 30%
+  full_brightness: 100%
+  medium_brightness: 50%
+  high_brightness: 75%
+
+esphome:
+  on_boot:
+    then:
+      - light.turn_on:
+          id: light_bar
+          brightness: ${boot_brightness}
+          effect: rainbow
+
+light:
+  - platform: neopixelbus
+    # type: GRB
+    variant: WS2812
+    pin: GPIO32
+    num_leds: 8
+    id: light_bar
+    name: "WS2812 x8 Light"
+    default_transition_length: 500ms
+    effects:
+      - pulse:
+      - addressable_scan:
+          scan_width: 3
+      - addressable_rainbow:
+
+text_sensor:
+  - platform: homeassistant
+    name: bat_signal
+    id: bat_signal
+    entity_id: input_text.bat_signal
+    on_value:
+      - if:
+          condition:
+            text_sensor.state:
+              id: bat_signal
+              state: "off"
+          then:
+            - light.turn_off:
+                id: light_bar
+      - if:
+          condition:
+            text_sensor.state:
+              id: bat_signal
+              state: "green"
+          then:
+            - light.turn_on:
+                id: light_bar
+                brightness: ${full_brightness}
+                red: 0
+                green: 1
+                blue: 0
+                effect: scan
+      - if:
+          condition:
+            text_sensor.state:
+              id: bat_signal
+              state: "green-ack"
+          then:
+            - light.turn_on:
+                id: light_bar
+                brightness: ${medium_brightness}
+                red: 0
+                green: 1
+                blue: 0
+                effect: "None"
+      - if:
+          condition:
+            text_sensor.state:
+              id: bat_signal
+              state: "yellow"
+          then:
+            - light.turn_on:
+                id: light_bar
+                brightness: ${full_brightness}
+                red: 1
+                green: 1
+                blue: 0
+                effect: scan
+      - if:
+          condition:
+            text_sensor.state:
+              id: bat_signal
+              state: "yellow-ack"
+          then:
+            - light.turn_on:
+                id: light_bar
+                brightness: ${medium_brightness}
+                red: 1
+                green: 1
+                blue: 0
+                effect: "None"
+      - if:
+          condition:
+            text_sensor.state:
+              id: bat_signal
+              state: "red"
+          then:
+            - light.turn_on:
+                id: light_bar
+                brightness: ${full_brightness}
+                red: 1
+                green: 0
+                blue: 0
+                effect: pulse
+      - if:
+          condition:
+            text_sensor.state:
+              id: bat_signal
+              state: "red-ack"
+          then:
+            - light.turn_on:
+                id: light_bar
+                brightness: ${high_brightness}
+                red: 1
+                green: 0
+                blue: 0
+                effect: "None"
+      - if:
+          condition:
+            text_sensor.state:
+              id: bat_signal
+              state: "blue"
+          then:
+            - light.turn_on:
+                id: light_bar
+                brightness: ${medium_brightness}
+                red: 0
+                green: 0
+                blue: 1
+                effect: "None"
