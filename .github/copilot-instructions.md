@@ -30,6 +30,7 @@
 - Environment values documented in repo files are reference-only; runtime values are typically entered in Portainer Stack UI.
 - Many stacks rely on host path variables (for example `HOST_DATA_PATH`) and stack-specific host prerequisites.
 - Traefik-centric networking is common across stacks (shared `proxy` network and labels where applicable).
+- When setting up Traefik on a new server, include the host in AdGuardHome DNS records for required FQDN routing.
 
 ## Oversized-LLM Guardrails
 
