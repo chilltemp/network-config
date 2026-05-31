@@ -13,6 +13,7 @@ applyTo: "*/docker-compose.yml"
 - Preserve Traefik-centric patterns when present:
   - Shared proxy network usage.
   - Existing Traefik labels and certresolver settings.
+  - For new Traefik servers, ensure host entries are added in AdGuardHome for FQDN routing.
 - Keep image pinning posture consistent. Do not switch pinned images to floating latest tags unless requested.
 - Preserve Oversized-LLM guardrails for relevant stacks:
   - Keep Ollama exposure constrained to Tailscale binding behavior.

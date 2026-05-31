@@ -53,3 +53,21 @@
     name: docker
     enabled: true
     state: started
+
+- name: Ensure Ansible SSH user is in docker group
+  ansible.builtin.user:
+    name: "{{ ansible_user | default('ansible-user') }}"
+    groups: docker
+    append: true
+
+- name: Ensure host data root exists and is writable for stack directory creation
+  ansible.builtin.file:
+    path: "{{ host_data_root_path }}"
+    state: directory
+    owner: "{{ host_data_root_owner }}"
+    group: "{{ host_data_root_group }}"
+    mode: "{{ host_data_root_mode }}"
+
+- name: Ensure /data is owned by uid/gid 1000 for stack bind mounts
+  ansible.builtin.command:
+    cmd: chown -R 1000:1000 /data

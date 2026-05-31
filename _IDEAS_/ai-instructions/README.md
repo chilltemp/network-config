@@ -1,6 +1,8 @@
 # Sample AI instructions files
+
 ## Credits
-Here are the sources for each prompt group, if I could relocate it.  I have edited some of them to my preferences.  Don't copy paste this list into to your ai, you'll just confuse it.
+
+Here are the sources for each prompt group, if I could relocate it. I have edited some of them to my preferences. Don't copy paste this list into to your ai, you'll just confuse it.
 
 - `_IDEAS_/ai-instructions/group-1.agent.md `
   - https://levelup.gitconnected.com/level-up-your-claude-code-with-this-claude-md-374521f1e1ab
@@ -15,8 +17,8 @@ Here are the sources for each prompt group, if I could relocate it.  I have edit
   - edited for the tools/packages I prefer
   - yes, I intentionally left the human instructions in
 
-
 ## The Prompt
+
 Ccopy and pasted into the copilot prompt.
 
 ====================================================================
@@ -126,11 +128,12 @@ B. Implicit Contradictions
 C. Terminology Conflicts  
 D. Scope Conflicts  
 E. Redundancy & Duplication  
-F. Missing Precedence  
+F. Missing Precedence
 
 For each conflict, generate a structured report:
 
 ### Conflict Detected
+
 - Type:
 - Source A:
 - Source B:
@@ -194,14 +197,14 @@ Follow this workflow exactly:
    - Create new domain-scoped files ONLY if explicitly approved.
 
 10. Document:
-   - rules merged
-   - conflicts found
-   - unresolved questions
-   - any terminology normalization performed
+
+- rules merged
+- conflicts found
+- unresolved questions
+- any terminology normalization performed
 
 11. Do NOT modify unrelated files unless explicitly instructed.
 
 ====================================================================
 END OF PROMPT
 ====================================================================
-

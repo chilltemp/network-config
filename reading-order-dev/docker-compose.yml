@@ -28,6 +28,35 @@ services:
       - "traefik.tcp.routers.postgres.service=postgres"
       - "traefik.tcp.services.postgres.loadbalancer.server.port=5432"
 
+      - traefik.enable=true
+      - traefik.docker.network=proxy
+      - traefik.tcp.routers.karens-db-dev-db.rule=HostSNI(`${FQDN:?FQDN not set}`)
+      - traefik.tcp.routers.karens-db-dev-db.entrypoints=postgres
+      - traefik.tcp.routers.karens-db-dev-db.tls=true
+      - traefik.tcp.routers.karens-db-dev-db.tls.certresolver=cloudflare
+      - traefik.tcp.services.karens-db-dev-db.loadbalancer.server.port=5432
+
+  pgadmin:
+    image: dpage/pgadmin4:8
+    restart: "no"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:?PGADMIN_DEFAULT_EMAIL not set}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:?PGADMIN_DEFAULT_PASSWORD not set}
+    volumes:
+      - ${HOST_DATA_PATH:?HOST_DATA_PATH not set}/pgadmin-dev:/var/lib/pgadmin
+    networks:
+      - karens-database
+      - proxy
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=proxy
+      - traefik.http.routers.karens-db-dev-pgadmin.rule=Host(`${FQDN:?FQDN not set}`) && PathPrefix(`/pgadmin`)
+      - traefik.http.routers.karens-db-dev-pgadmin.entrypoints=websecure
+      - traefik.http.routers.karens-db-dev-pgadmin.tls=true
+      - traefik.http.routers.karens-db-dev-pgadmin.tls.certresolver=cloudflare
+      - traefik.http.routers.karens-db-dev-pgadmin.priority=120
+      - traefik.http.services.karens-db-dev-pgadmin.loadbalancer.server.port=80
+      
   pgadmin:
     image: dpage/pgadmin4:9.11.0
     # Don't auto start pgAdmin, as it's not needed for normal operation

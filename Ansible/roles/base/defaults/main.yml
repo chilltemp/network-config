@@ -4,3 +4,9 @@ portainer_server_lan_ip: 192.168.1.10
 tailscale_subnet_cidr: 100.64.0.0/10
 ollama_port: 11434
 portainer_agent_port: 9001
+
+# Host data root used by compose stacks. Keep writable by the Docker operator account.
+host_data_root_path: /data
+host_data_root_owner: "{{ ansible_user | default('ansible-user') }}"
+host_data_root_group: docker
+host_data_root_mode: "2775"

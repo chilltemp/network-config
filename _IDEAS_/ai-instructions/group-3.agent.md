@@ -36,32 +36,14 @@ These instructions guide GitHub Copilot to suggest secure, intentional code patt
 
 ## 🚫 3. Do Not Suggest
 
-### Java
-
-- Do not suggest inline SQL string concatenation — always use prepared statements with placeholders.
-- Do not suggest use of `Runtime.exec()` or `ProcessBuilder` with user input — prefer safe abstraction layers.
-- Do not suggest logging sensitive data (e.g. passwords, tokens, session IDs) — log redacted metadata instead.
-- Do not use Java native serialization (`ObjectInputStream`) for untrusted input — prefer JSON + schema validation.
-- Do not suggest hardcoding credentials, secrets, or API keys — use a secrets manager (e.g. Conjur, Key Vault).
-- Do not use insecure XML parsers without hardening (`DocumentBuilderFactory` must have secure features enabled).
-- Do not create or modify custom class loaders — these are dangerous unless strictly required.
-
 ### Node.js
 
 - Do not suggest `eval`, `new Function`, or dynamic `require()` — these are unsafe unless strictly controlled.
 - Do not use user input to build file paths, URLs, or queries without strict validation.
-- Do not expose `process.env` directly to client-side code — use secure server boundaries.
+- Do not expose `process.env` directly to client-side code (except intentionally public like `NEXT_PUBLIC_*`) — use secure server boundaries.
 - Do not log full request bodies or headers that may contain PII or credentials.
 - Do not hardcode secrets or API keys — never commit `.env` or use `.env` in production containers.
 - Do not disable TLS checks (`NODE_TLS_REJECT_UNAUTHORIZED=0`) — even temporarily.
-
-### C#
-
-- Do not suggest string concatenation in SQL queries — use parameterized commands.
-- Do not use `Eval`, `CodeDom`, or dynamic LINQ construction with user input.
-- Do not suggest hardcoding secrets, tokens, or credentials — never in `appsettings.json`.
-- Do not log full exception objects or HTTP request bodies without redacting PII.
-- Do not disable certificate validation (`ServerCertificateValidationCallback = delegate { return true; }`) in production.
 
 ### Python
 
