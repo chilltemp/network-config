@@ -40,9 +40,10 @@ services:
       - FORGEJO__server__DOMAIN=${FQDN:?FQDN not set}
       - FORGEJO__server__ROOT_URL=https://${FQDN:?FQDN not set}/
       - FORGEJO__server__SSH_DOMAIN=${FQDN:?FQDN not set}
-      - FORGEJO__server__START_SSH_SERVER=true              # built-in Go SSH server (no OpenSSH in container)
-      - FORGEJO__server__SSH_PORT=${SSH_PORT:-2222}         # clone port advertised in the UI
-      - FORGEJO__server__SSH_LISTEN_PORT=22                 # in-container listen port
+      # The Docker image runs its own OpenSSH on port 22 — do NOT also enable Forgejo's built-in
+      # Go SSH server (START_SSH_SERVER), or both fight over :22 and the container crash-loops.
+      - FORGEJO__server__SSH_PORT=${SSH_PORT:-2222}         # clone port advertised in the UI (host-published)
+      - FORGEJO__server__SSH_LISTEN_PORT=22                 # in-container OpenSSH listen port
       - FORGEJO__server__LFS_START_SERVER=${LFS_ENABLED:-false}   # Git LFS off by default
       - FORGEJO__database__DB_TYPE=sqlite3
       - FORGEJO__service__DISABLE_REGISTRATION=true         # create users via admin CLI after first run
