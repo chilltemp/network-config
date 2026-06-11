@@ -32,6 +32,7 @@ and prunes old dumps.
 - `HOST_DATA_PATH` (default: `/data/forgejo`)
 - `SSH_PORT` (default: `2222`)
 - `LFS_ENABLED` (default: `false`; set `true` to enable the Git LFS server)
+- `DISABLE_REGISTRATION` (default: `true`; set `false` to allow self-service signup)
 - `BACKUP_RETENTION_DAYS` (default: `14`)
 
 ## Host Setup

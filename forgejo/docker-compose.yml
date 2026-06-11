@@ -16,6 +16,7 @@
 #   HOST_DATA_PATH        - Host path for live data (default: /data/forgejo)
 #   SSH_PORT              - Host port published for git-over-SSH (default: 2222)
 #   LFS_ENABLED           - Enable Git LFS server (default: false)
+#   DISABLE_REGISTRATION  - Disable self-service signup (default: true)
 #   BACKUP_RETENTION_DAYS - Days of dumps to keep on the share (default: 14)
 #
 # Host setup (on the app server):
@@ -49,7 +50,7 @@ services:
       - FORGEJO__server__SSH_LISTEN_PORT=22                 # in-container OpenSSH listen port
       - FORGEJO__server__LFS_START_SERVER=${LFS_ENABLED:-false}   # Git LFS off by default
       - FORGEJO__database__DB_TYPE=sqlite3
-      - FORGEJO__service__DISABLE_REGISTRATION=true         # create users via admin CLI after first run
+      - FORGEJO__service__DISABLE_REGISTRATION=${DISABLE_REGISTRATION:-true}   # default closed; create users via admin CLI
       - FORGEJO__security__INSTALL_LOCK=true                # config is declarative here; skip web installer
     volumes:
       - ${HOST_DATA_PATH:-/data/forgejo}:/data             # repos, LFS, SQLite DB, config — on app-server SSD
