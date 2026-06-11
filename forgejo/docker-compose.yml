@@ -1,0 +1,103 @@
+# forgejo docker-compose.yml
+#
+# Self-hosted Forgejo Git server (SQLite) with optional Git LFS.
+# Live data (repos, LFS, SQLite DB, config) lives on the host SSD via HOST_DATA_PATH.
+# Nightly `forgejo dump` backups are written, via the Ofelia scheduler, to a CIFS volume
+# backed by the Unraid Samba share (which is itself cloud-backed).
+#
+# Required Environment Variables:
+#   FQDN          - Fully qualified domain name for HTTPS access (e.g. forgejo.host.home-lan.net)
+#   SMB_HOST      - Unraid host/IP serving the backup Samba share
+#   SMB_SHARE     - Samba share name to write dumps into
+#   SMB_USERNAME  - Samba username
+#   SMB_PASSWORD  - Samba password
+#
+# Optional Environment Variables:
+#   HOST_DATA_PATH        - Host path for live data (default: /data/forgejo)
+#   SSH_PORT              - Host port published for git-over-SSH (default: 2222)
+#   LFS_ENABLED           - Enable Git LFS server (default: false)
+#   BACKUP_RETENTION_DAYS - Days of dumps to keep on the share (default: 14)
+#
+# Host setup (on the app server):
+#   sudo mkdir -p /data/forgejo
+#   sudo chown -R 1000:1000 /data/forgejo
+#   # host needs CIFS support (cifs-utils) for the backup-smb volume
+#
+# Deploy from the Portainer UI in GitOps (repository) mode pointed at this repo — that is the
+# only way to use Portainer's GitOps auto-update feature. See README.md.
+
+services:
+
+  forgejo:
+    # 15.x is current stable; 11.x is the LTS line. Pin to a specific patch (no floating tags).
+    image: codeberg.org/forgejo/forgejo:15.0.3
+    container_name: forgejo
+    restart: unless-stopped
+    environment:
+      - USER_UID=1000
+      - USER_GID=1000
+      # Forgejo config via FORGEJO__<section>__<KEY> overrides:
+      - FORGEJO__server__DOMAIN=${FQDN:?FQDN not set}
+      - FORGEJO__server__ROOT_URL=https://${FQDN:?FQDN not set}/
+      - FORGEJO__server__SSH_DOMAIN=${FQDN:?FQDN not set}
+      - FORGEJO__server__START_SSH_SERVER=true              # built-in Go SSH server (no OpenSSH in container)
+      - FORGEJO__server__SSH_PORT=${SSH_PORT:-2222}         # clone port advertised in the UI
+      - FORGEJO__server__SSH_LISTEN_PORT=22                 # in-container listen port
+      - FORGEJO__server__LFS_START_SERVER=${LFS_ENABLED:-false}   # Git LFS off by default
+      - FORGEJO__database__DB_TYPE=sqlite3
+      - FORGEJO__service__DISABLE_REGISTRATION=true         # create users via admin CLI after first run
+      - FORGEJO__security__INSTALL_LOCK=true                # config is declarative here; skip web installer
+    volumes:
+      - ${HOST_DATA_PATH:-/data/forgejo}:/data             # repos, LFS, SQLite DB, config — on app-server SSD
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+      - backup-smb:/backups                                # dump target (Unraid SMB)
+    ports:
+      - "${SSH_PORT:-2222}:22"                             # raw TCP for git-over-SSH (not via Traefik)
+    networks:
+      - proxy
+    deploy:
+      resources:
+        limits:
+          cpus: '4'
+          memory: 4G
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.forgejo.tls=true"
+      - "traefik.http.routers.forgejo.tls.certresolver=cloudflare"
+      - "traefik.http.routers.forgejo.entrypoints=websecure"
+      - "traefik.http.routers.forgejo.rule=Host(`${FQDN:?FQDN not set}`)"
+      - "traefik.http.services.forgejo.loadbalancer.server.port=3000"
+      # Ofelia scheduler: nightly dump + retention prune, executed inside this container.
+      - "ofelia.enabled=true"
+      - "ofelia.job-exec.forgejo-dump.schedule=0 0 3 * * *"
+      - "ofelia.job-exec.forgejo-dump.user=git"
+      - "ofelia.job-exec.forgejo-dump.command=sh -c 'cd /backups && forgejo dump -c /data/gitea/conf/app.ini --type tar.zst'"
+      - "ofelia.job-exec.forgejo-prune.schedule=0 30 3 * * *"
+      - "ofelia.job-exec.forgejo-prune.command=sh -c 'find /backups -name forgejo-dump-* -mtime +${BACKUP_RETENTION_DAYS:-14} -delete'"
+
+  ofelia:
+    image: mcuadros/ofelia:0.3.22
+    container_name: forgejo-ofelia
+    restart: unless-stopped
+    depends_on:
+      - forgejo
+    command: daemon --docker
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - forgejo
+
+networks:
+  proxy:
+    name: proxy
+  forgejo:
+    name: forgejo
+
+volumes:
+  backup-smb:
+    driver: local
+    driver_opts:
+      type: cifs
+      o: "username=${SMB_USERNAME:?SMB_USERNAME not set},password=${SMB_PASSWORD:?SMB_PASSWORD not set},uid=1000,gid=1000,vers=3.0,file_mode=0660,dir_mode=0770"
+      device: "//${SMB_HOST:?SMB_HOST not set}/${SMB_SHARE:?SMB_SHARE not set}"
