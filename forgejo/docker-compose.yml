@@ -40,8 +40,11 @@ services:
       - FORGEJO__server__DOMAIN=${FQDN:?FQDN not set}
       - FORGEJO__server__ROOT_URL=https://${FQDN:?FQDN not set}/
       - FORGEJO__server__SSH_DOMAIN=${FQDN:?FQDN not set}
-      # The Docker image runs its own OpenSSH on port 22 — do NOT also enable Forgejo's built-in
-      # Go SSH server (START_SSH_SERVER), or both fight over :22 and the container crash-loops.
+      # The Docker image runs its own OpenSSH on port 22. Forgejo's built-in Go SSH server must
+      # stay OFF or both fight over :22 and the container crash-loops. Set this EXPLICITLY to
+      # false (not just omitted): env vars are persisted into app.ini, and the image only ever
+      # *sets* keys — it won't remove a previously-written START_SSH_SERVER=true, so we overwrite.
+      - FORGEJO__server__START_SSH_SERVER=false
       - FORGEJO__server__SSH_PORT=${SSH_PORT:-2222}         # clone port advertised in the UI (host-published)
       - FORGEJO__server__SSH_LISTEN_PORT=22                 # in-container OpenSSH listen port
       - FORGEJO__server__LFS_START_SERVER=${LFS_ENABLED:-false}   # Git LFS off by default
