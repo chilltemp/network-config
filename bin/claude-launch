@@ -1,0 +1,58 @@
+#!/usr/bin/env zsh
+# claude-launch — open Claude Code in a named tmux session for a project alias.
+#   Usage: claude-launch <alias> [extra claude args...]
+set -euo pipefail
+
+# alias -> project directory
+typeset -A DIRS=(
+  medical      "$HOME/github/medical-wiki"
+  reading-code "$HOME/github/readingorder.info-2025"
+  reading-wiki "$HOME/github/readingorder.wiki"
+  network      "$HOME/github/network-config"
+)
+
+usage() {
+  print -u2 "Usage: claude-launch <alias> [extra claude args...]"
+  print -u2 "Aliases: ${(k)DIRS}"
+  exit 1
+}
+
+alias_name="${1:-}"
+[[ -z "$alias_name" ]] && usage
+shift
+
+dir="${DIRS[$alias_name]:-}"
+[[ -z "$dir" ]] && { print -u2 "Unknown alias: $alias_name"; usage; }
+[[ -d "$dir" ]] || { print -u2 "Directory not found: $dir"; exit 1; }
+
+# ${0:A:h} = this script's real dir (absolute, symlinks resolved) → locate .env.
+SCRIPT_DIR="${0:A:h}"
+ENV_FILE="$SCRIPT_DIR/.env"
+[[ -f "$ENV_FILE" ]] || print -u2 "warning: $ENV_FILE not found; MCP env vars will be unset"
+
+# Pick a free session name: <alias>, then <alias>-2, <alias>-3, ...
+name="$alias_name"; n=2
+while tmux has-session -t "=$name" 2>/dev/null; do name="${alias_name}-${n}"; (( n++ )); done
+
+# Build the in-session command (POSIX sh, since tmux runs it via /bin/sh -c).
+# Loading .env *inside* the session keeps secrets off the process argv (ps) and
+# reaches claude regardless of tmux env inheritance. The file is parsed LITERALLY
+# (read -r + parameter expansion, never sourced/eval'd) so values containing shell
+# metacharacters — & $ * % ^ etc. — are exported verbatim. ${(q)...} shell-quotes
+# each interpolated value.
+claude_cmd="claude"
+for a in "$@"; do claude_cmd+=" ${(q)a}"; done
+launch=""
+if [[ -f "$ENV_FILE" ]]; then
+  launch+="while IFS= read -r __l || [ -n \"\$__l\" ]; do case \"\$__l\" in ''|\\#*) continue ;; esac; export \"\${__l%%=*}=\${__l#*=}\"; done < ${(q)ENV_FILE}; unset __l; "
+fi
+launch+="exec $claude_cmd"
+
+tmux new-session -d -s "$name" -c "$dir" "$launch"
+
+# Auto-attach (switch if already inside tmux).
+if [[ -n "${TMUX:-}" ]]; then
+  tmux switch-client -t "$name"
+else
+  tmux attach-session -t "$name"
+fi
