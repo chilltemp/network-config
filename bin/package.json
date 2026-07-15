@@ -1,0 +1,13 @@
+{
+  "name": "ccl",
+  "version": "1.0.0",
+  "description": "Interactive multi-config Claude Code + tmux launcher",
+  "type": "module",
+  "private": true,
+  "bin": {
+    "ccl": "./ccl"
+  },
+  "dependencies": {
+    "@clack/prompts": "^0.11.0"
+  }
+}

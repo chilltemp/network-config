@@ -1,0 +1,393 @@
+#!/usr/bin/env node
+// ccl — interactive multi-config Claude Code + tmux launcher.
+//   Usage: ccl [extra claude args...]
+//
+// Three arrow-key selects (Project → Profile → Session), each defaulted so that
+// pressing Enter three times launches the highlighted project under the primary
+// account in a fresh session ("speedrun" UX). Opens Claude in its own named tmux
+// session, injecting the shared MCP secrets from bin/.env.
+//
+// Successor to claude-launch: adds account-profile switching (CLAUDE_CONFIG_DIR)
+// and session resume, including copying a session across profiles so one started
+// under one account can be resumed under the other.
+
+import fs from "node:fs";
+import path from "node:path";
+import os from "node:os";
+import url from "node:url";
+import { execFileSync } from "node:child_process";
+
+// @clack/prompts is a local dependency (bin/node_modules). If it is missing,
+// point the user at the one-time install instead of crashing with a stack trace.
+let p;
+try {
+  p = await import("@clack/prompts");
+} catch {
+  const dir = path.dirname(url.fileURLToPath(import.meta.url));
+  console.error(
+    `ccl: dependencies not installed. Run:\n  (cd ${dir} && npm install)`,
+  );
+  process.exit(1);
+}
+
+const HOME = os.homedir();
+// Resolve symlinks so bin/.env is found next to the *real* script (mirrors
+// claude-launch's ${0:A:h}), even when ccl is invoked via a PATH symlink.
+const SCRIPT_DIR = path.dirname(
+  fs.realpathSync(url.fileURLToPath(import.meta.url)),
+);
+const ENV_FILE = path.join(SCRIPT_DIR, ".env");
+
+// ---------------------------------------------------------------------------
+// CONFIG
+// ---------------------------------------------------------------------------
+// alias -> { project dir, optional per-project env }. Shared MCP secrets come
+// from bin/.env; per-project `env` is for anything project-specific (start empty).
+const PROJECTS = {
+  medical: { dir: `${HOME}/github/medical-wiki`, env: {} },
+  "reading-code": { dir: `${HOME}/github/readingorder.info-2025`, env: {} },
+  "reading-wiki": { dir: `${HOME}/github/readingorder.wiki`, env: {} },
+  network: { dir: `${HOME}/github/network-config`, env: {} },
+};
+
+// account profile -> CLAUDE_CONFIG_DIR. primary is Claude's default (~/.claude);
+// secondary is a separate dir, created on first use. Both MUST be explicit paths:
+// exporting an EMPTY CLAUDE_CONFIG_DIR is not the same as leaving it unset — Claude
+// resolves an empty path relative to the cwd, so a blank primary would scatter config
+// into each project dir (and break the session listing's path.join below).
+const PROFILES = {
+  primary: `${HOME}/.claude`,
+  secondary: `${HOME}/.claude-secondary`,
+};
+
+// ---------------------------------------------------------------------------
+// HELPERS
+// ---------------------------------------------------------------------------
+
+// POSIX single-quote a string for safe embedding in the inner /bin/sh command.
+// Only ever applied to NON-secret pieces (env-file path, config dir, claude args).
+const shq = (s) => `'${String(s).replaceAll("'", `'\\''`)}'`;
+
+// Claude stores session transcripts under <config>/projects/<encoded-cwd>/, where
+// every non-alphanumeric char in the cwd (slashes, dots, etc.) becomes a dash:
+// /Users/chill/x.y -> -Users-chill-x-y.
+const encodeCwd = (dir) => dir.replace(/[^a-zA-Z0-9]/g, "-");
+
+const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
+
+function relTime(ms) {
+  const s = Math.floor((Date.now() - ms) / 1000);
+  if (s < 60) return `${s}s ago`;
+  const m = Math.floor(s / 60);
+  if (m < 60) return `${m}m ago`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h}h ago`;
+  return `${Math.floor(h / 24)}d ago`;
+}
+
+// Map sessionId -> friendly display name, from <config>/sessions/*.json.
+function nameRegistry(profileKey) {
+  const map = new Map();
+  const dir = path.join(PROFILES[profileKey], "sessions");
+  let files;
+  try {
+    files = fs.readdirSync(dir).filter((f) => f.endsWith(".json"));
+  } catch {
+    return map;
+  }
+  for (const f of files) {
+    try {
+      const d = JSON.parse(fs.readFileSync(path.join(dir, f), "utf8"));
+      if (d.sessionId && d.name) map.set(d.sessionId, d.name);
+    } catch {
+      /* ignore unreadable/partial registry entries */
+    }
+  }
+  return map;
+}
+
+// Resumable sessions for one project under one profile, newest first.
+function sessionsFor(profileKey, encoded) {
+  const dir = path.join(PROFILES[profileKey], "projects", encoded);
+  let files;
+  try {
+    files = fs.readdirSync(dir).filter((f) => f.endsWith(".jsonl"));
+  } catch {
+    return [];
+  }
+  const names = nameRegistry(profileKey);
+  return files.map((f) => {
+    const id = f.slice(0, -".jsonl".length);
+    let mtime = 0;
+    try {
+      mtime = fs.statSync(path.join(dir, f)).mtimeMs;
+    } catch {
+      /* keep 0 -> sorts last */
+    }
+    return {
+      profile: profileKey,
+      id,
+      mtime,
+      name: names.get(id),
+      file: path.join(dir, f),
+    };
+  });
+}
+
+// Read a session's persisted custom title from the first line of its transcript,
+// without slurping the whole (potentially multi-MB) file. Returns undefined if
+// the session was never named or the file is unreadable.
+function titleFromTranscript(file) {
+  let fd;
+  try {
+    fd = fs.openSync(file, "r");
+    const buf = Buffer.alloc(8192);
+    const n = fs.readSync(fd, buf, 0, buf.length, 0);
+    const firstLine = buf.toString("utf8", 0, n).split("\n", 1)[0];
+    const d = JSON.parse(firstLine);
+    return d.type === "custom-title" ? d.customTitle : undefined;
+  } catch {
+    return undefined;
+  } finally {
+    if (fd !== undefined) fs.closeSync(fd);
+  }
+}
+
+// Pick a free tmux session name: <base>, then <base>-2, <base>-3, ...
+function uniqueTmuxName(base) {
+  const exists = (name) => {
+    try {
+      execFileSync("tmux", ["has-session", "-t", `=${name}`], {
+        stdio: "ignore",
+      });
+      return true;
+    } catch {
+      return false;
+    }
+  };
+  if (!exists(base)) return base;
+  let n = 2;
+  while (exists(`${base}-${n}`)) n++;
+  return `${base}-${n}`;
+}
+
+// ---------------------------------------------------------------------------
+// MAIN
+// ---------------------------------------------------------------------------
+async function main() {
+  p.intro("⚡ Claude Code launcher");
+
+  // Preflight: tmux is required.
+  try {
+    execFileSync("tmux", ["-V"], { stdio: "ignore" });
+  } catch {
+    p.cancel(
+      "tmux not found on PATH. Install it (e.g. `brew install tmux`) and retry.",
+    );
+    process.exit(1);
+  }
+
+  const haveEnv = fs.existsSync(ENV_FILE);
+  if (!haveEnv) {
+    p.log.warn(`${ENV_FILE} not found; MCP env vars will be unset.`);
+  }
+
+  // Q1 — Project (first option highlighted; no forced default so 3×Enter works).
+  const alias = await p.select({
+    message: "Project",
+    options: Object.keys(PROJECTS).map((k) => ({
+      value: k,
+      label: k,
+      hint: PROJECTS[k].dir.replace(HOME, "~"),
+    })),
+  });
+  if (p.isCancel(alias)) return p.cancel("Launcher aborted.");
+  const project = PROJECTS[alias];
+  if (!fs.existsSync(project.dir)) {
+    p.cancel(`Project directory not found: ${project.dir}`);
+    process.exit(1);
+  }
+
+  // Q2 — Account profile (defaults to primary).
+  const account = await p.select({
+    message: "Account profile",
+    initialValue: "primary",
+    options: [
+      { value: "primary", label: "Primary", hint: "~/.claude" },
+      {
+        value: "secondary",
+        label: "Secondary",
+        hint: PROFILES.secondary.replace(HOME, "~"),
+      },
+    ],
+  });
+  if (p.isCancel(account)) return p.cancel("Launcher aborted.");
+
+  // Q3 — Session strategy: new, or resume one of the 10 most recent (both profiles).
+  const encoded = encodeCwd(project.dir);
+  const sessions = [
+    ...sessionsFor("primary", encoded),
+    ...sessionsFor("secondary", encoded),
+  ]
+    .sort((a, b) => b.mtime - a.mtime)
+    .slice(0, 10);
+
+  // Resolve a display name for just the shown sessions (≤10 small reads). The
+  // live-session registry only covers a few recent sessions, so fall back to the
+  // custom title persisted in each transcript's first line.
+  for (const s of sessions) {
+    if (!s.name) s.name = titleFromTranscript(s.file);
+  }
+
+  const sessionOptions = [
+    { value: "new", label: "🌟 New session" },
+    ...sessions.map((s) => ({
+      value: s,
+      label: `🔄 [${s.id}] [${cap(s.profile)}] ${s.name || s.id.slice(0, 8)}`,
+      hint: relTime(s.mtime),
+    })),
+  ];
+
+  const choice = await p.select({
+    message: "Session",
+    initialValue: "new",
+    options: sessionOptions,
+  });
+  if (p.isCancel(choice)) return p.cancel("Launcher aborted.");
+
+  // ---- Resolve runtime -----------------------------------------------------
+  const configDir = PROFILES[account];
+  const extraArgs = process.argv.slice(2);
+  let claudeArgs = [...extraArgs];
+
+  if (choice !== "new") {
+    const src = choice; // { profile, id }
+    // Cross-profile resume: copy the transcript into the target profile first.
+    if (src.profile !== account) {
+      try {
+        const from = path.join(
+          PROFILES[src.profile],
+          "projects",
+          encoded,
+          `${src.id}.jsonl`,
+        );
+        const toDir = path.join(configDir, "projects", encoded);
+        const to = path.join(toDir, `${src.id}.jsonl`);
+        if (!fs.existsSync(to) && fs.existsSync(from)) {
+          fs.mkdirSync(toDir, { recursive: true });
+          fs.copyFileSync(from, to);
+          p.log.step(
+            `Copied session ${src.id.slice(0, 8)} from ${src.profile} → ${account}.`,
+          );
+        }
+      } catch (err) {
+        p.log.warn(
+          `Could not copy session across profiles (${err.message}); resuming may fail.`,
+        );
+      }
+    }
+    claudeArgs = ["--resume", src.id, ...extraArgs];
+  }
+
+  // Ensure the (possibly new) secondary config dir exists before launch.
+  try {
+    fs.mkdirSync(configDir, { recursive: true });
+  } catch {
+    /* non-fatal; claude will create it */
+  }
+
+  // ---- One shared name -----------------------------------------------------
+  // The tmux session, the Claude session (--name), and the terminal/tab title
+  // all derive from this single name so the three surfaces stay in sync.
+  const base = account === "secondary" ? `${alias}-alt` : alias;
+  const name = uniqueTmuxName(base);
+  claudeArgs = ["--name", name, ...claudeArgs];
+
+  // ---- Build the in-tmux launch command (POSIX sh) -------------------------
+  // Loads bin/.env *literally* inside the session (values read raw, never
+  // eval/source'd, and kept off `ps` since only the file path is embedded here —
+  // not the secret values). See bin/README.md for the special-char rationale.
+  const parts = [];
+  if (haveEnv) {
+    parts.push(
+      `while IFS= read -r __l || [ -n "$__l" ]; do ` +
+        `case "$__l" in ''|\\#*) continue ;; esac; ` +
+        `export "\${__l%%=*}=\${__l#*=}"; ` +
+        `done < ${shq(ENV_FILE)}; unset __l`,
+    );
+  }
+  // Only export CLAUDE_CONFIG_DIR for non-default profiles. Claude reads its
+  // config JSON from <CLAUDE_CONFIG_DIR>/.claude.json when the var is set, but the
+  // real primary profile (auth, onboarding flag, history) lives in ~/.claude.json —
+  // NOT ~/.claude/.claude.json. Setting CLAUDE_CONFIG_DIR=~/.claude therefore points
+  // Claude at an empty stub and triggers the new-user wizard. Leaving it UNSET (not
+  // empty) restores the true defaults: data dir ~/.claude AND config ~/.claude.json.
+  if (configDir !== path.join(HOME, ".claude")) {
+    parts.push(`export CLAUDE_CONFIG_DIR=${shq(configDir)}`);
+  }
+  for (const [k, v] of Object.entries(project.env)) {
+    parts.push(`export ${k}=${shq(v)}`);
+  }
+  parts.push(
+    `exec claude${claudeArgs.length ? " " + claudeArgs.map(shq).join(" ") : ""}`,
+  );
+  const launch = parts.join("; ");
+
+  // ---- Spawn detached, then attach ----------------------------------------
+  try {
+    execFileSync("tmux", [
+      "new-session",
+      "-d",
+      "-s",
+      name,
+      "-c",
+      project.dir,
+      launch,
+    ]);
+  } catch (err) {
+    p.cancel(`Failed to create tmux session: ${err.message}`);
+    process.exit(1);
+  }
+
+  // Keep every surface showing the same `name`: the tmux window (status bar),
+  // the terminal/tab title (Ghostty follows tmux's set-titles), and — via the
+  // `--name` flag above — the Claude session itself. `allow-rename off` blocks
+  // Claude's own OSC title updates from overriding the fixed window name.
+  const setTmux = (opts) => {
+    try {
+      execFileSync("tmux", opts, { stdio: "ignore" });
+    } catch {
+      /* title cosmetics are best-effort; never fail the launch over them */
+    }
+  };
+  setTmux(["set-option", "-t", name, "set-titles", "on"]);
+  setTmux(["set-option", "-t", name, "set-titles-string", "#S"]);
+  setTmux(["set-window-option", "-t", name, "automatic-rename", "off"]);
+  setTmux(["set-window-option", "-t", name, "allow-rename", "off"]);
+  setTmux(["rename-window", "-t", name, name]);
+
+  p.outro(
+    `Launching ${name} · ${cap(account)} · ${choice === "new" ? "new session" : "resume " + choice.id.slice(0, 8)}`,
+  );
+
+  // Break out of clack's alt-screen before handing the terminal to tmux.
+  process.stdout.write("\x1b[?1049l");
+  try {
+    if (process.env.TMUX) {
+      execFileSync("tmux", ["switch-client", "-t", name], { stdio: "inherit" });
+    } else {
+      execFileSync("tmux", ["attach-session", "-t", name], {
+        stdio: "inherit",
+      });
+    }
+  } catch (err) {
+    console.error(
+      `Could not attach automatically (${err.message}). Attach with: tmux attach -t ${name}`,
+    );
+  }
+}
+
+main().catch((err) => {
+  console.error(err);
+  process.exit(1);
+});

@@ -1,1 +1,17 @@
 .env
+bin/node_modules/
+
+# Claude Code config-dir artifacts — created if CLAUDE_CONFIG_DIR ever points at
+# this repo (root-anchored so real subdirs like Ansible/cache are unaffected).
+/.last-cleanup
+/backups/
+/cache/
+/chrome/
+/file-history/
+/history.jsonl
+/plans/
+/projects/
+/sessions/
+/session-env/
+/settings.json
+/shell-snapshots/
