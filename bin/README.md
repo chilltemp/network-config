@@ -38,6 +38,12 @@ Behavior:
   profile before `claude --resume <uuid>` runs.
 - **Secrets**: `bin/.env` is loaded **inside** the session (keeps values off `ps` output)
   so the `${VAR}` references in each project's `.mcp.json` resolve.
+- **Your shell profile applies**: the session runs under `$SHELL -l -i`, so `~/.zprofile`
+  and `~/.zshrc` are sourced and its `node`/`npx`/`pyenv`/PATH match a normal terminal.
+  Needed because tmux runs the launch command through `/bin/sh -c` (which sources nothing)
+  in a session that inherits the tmux **server's** environment — frozen at whatever shell
+  first started the server, since `PATH` isn't in tmux's `update-environment`. Without this,
+  sessions could inherit a stale, pre-nvm PATH and pick up an old system `node`.
 - **Auto-attaches** (or `switch-client` if you're already inside tmux).
 
 ### Why `bin/.env` is read literally (not via dotenv)

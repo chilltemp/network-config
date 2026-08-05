@@ -45,6 +45,7 @@ const ENV_FILE = path.join(SCRIPT_DIR, ".env");
 // from bin/.env; per-project `env` is for anything project-specific (start empty).
 const PROJECTS = {
   medical: { dir: `${HOME}/github/medical-wiki`, env: {} },
+  "charlie-medical": { dir: `${HOME}/github/charlie-medical-wiki`, env: {} },
   "reading-code": { dir: `${HOME}/github/readingorder.info-2025`, env: {} },
   "reading-wiki": { dir: `${HOME}/github/readingorder.wiki`, env: {} },
   network: { dir: `${HOME}/github/network-config`, env: {} },
@@ -331,7 +332,18 @@ async function main() {
   parts.push(
     `exec claude${claudeArgs.length ? " " + claudeArgs.map(shq).join(" ") : ""}`,
   );
-  const launch = parts.join("; ");
+  // tmux runs this via `/bin/sh -c`, which sources no startup files, and the new
+  // session inherits the tmux *server's* environment — frozen at whatever shell
+  // first started the server, since PATH is not in `update-environment`. So a
+  // session could come up with a stale, pre-nvm PATH and the wrong `node`/`npx`.
+  // Run under the login shell so ~/.zprofile and ~/.zshrc apply (nvm's default
+  // alias, pyenv, ~/.local/bin), giving the session the same environment as a
+  // normal terminal. `-i` is required: nvm is loaded from ~/.zshrc, which a
+  // non-interactive shell skips.
+  const inner = parts.join("; ");
+  const launch = process.env.SHELL
+    ? `exec ${shq(process.env.SHELL)} -l -i -c ${shq(inner)}`
+    : inner; // no $SHELL: keep the old behaviour rather than guessing a shell
 
   // ---- Spawn detached, then attach ----------------------------------------
   try {
