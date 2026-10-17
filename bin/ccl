@@ -49,6 +49,7 @@ const PROJECTS = {
   "reading-code": { dir: `${HOME}/github/readingorder.info-2025`, env: {} },
   "reading-wiki": { dir: `${HOME}/github/readingorder.wiki`, env: {} },
   network: { dir: `${HOME}/github/network-config`, env: {} },
+  "karens-database": { dir: `${HOME}/github/karens-database`, env: {} },
 };
 
 // account profile -> CLAUDE_CONFIG_DIR. primary is Claude's default (~/.claude);
