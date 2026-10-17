@@ -32,6 +32,16 @@
 - Traefik-centric networking is common across stacks (shared `proxy` network and labels where applicable).
 - When setting up Traefik on a new server, include the host in AdGuardHome DNS records for required FQDN routing.
 
+## Internal Domain (`home-lan.net`)
+
+- `home-lan.net` is internal-only. It was registered on 2024-09-27 through Cloudflare, which also hosts its zone. That public zone deliberately has no A/AAAA/MX/TXT records, including no wildcard record.
+- Host records exist only on the homelab's own DNS servers (AdGuardHome). No `*.home-lan.net` name resolves on public resolvers.
+- TLS uses a single `*.home-lan.net` wildcard certificate (Let's Encrypt, DNS-01 via Cloudflare). Prefer the wildcard over per-host certificates, because every per-host certificate publishes its hostname in public Certificate Transparency logs.
+- Committing `home-lan.net` hostnames and internal URLs is acceptable: the names are unreachable without the internal DNS. This does not relax the plaintext-secrets rule.
+- Do not add public records to the Cloudflare zone, or expose an internal host publicly, without explicit approval.
+- Certificate Transparency entries dated before 2024-09-27 (bare `home-lan.net` only, 2023-04 to 2024-05) belong to a previous registrant and are not part of this setup.
+- To check public exposure, run `dig +short @1.1.1.1 <name>.home-lan.net` (should return nothing) and search crt.sh for `%.home-lan.net` (should show only `home-lan.net` and `*.home-lan.net`).
+
 ## Oversized-LLM Guardrails
 
 - Keep scope focused on Oversized-LLM unless explicitly asked to modify other stacks.

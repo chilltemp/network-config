@@ -15,6 +15,7 @@ When `/init` is invoked, update `.github/copilot-instructions.md` and the releva
 - **Exposure boundaries**: Ollama is reachable only via Tailscale (preserve `OLLAMA_BIND_IP`); Portainer Agent stays LAN-only and independent of Tailscale. Don't broaden Ollama exposure without explicit approval.
 - **Firewall intent** in `Ansible/roles/base/tasks/main.yml` must be preserved: SSH from management LAN only, Ollama port from Tailscale subnet only, Portainer Agent port from the central Portainer Server LAN IP only, deny other inbound by default.
 - **Secrets**: never commit plaintext secrets. Secret values live in `ansible-vault`-managed files; repo `.env` and READMEs are reference-only (`.env` is gitignored). Runtime values are entered in the Portainer Stack UI.
+- **Internal domain**: `home-lan.net` is internal-only (records only in AdGuardHome, public Cloudflare zone kept empty, one `*.home-lan.net` wildcard cert). Committing its hostnames is fine; don't add public DNS records or per-host certs without approval. See "Internal Domain" in copilot-instructions.md.
 - **Compose stacks** are standalone — don't mass-normalize compose files across the repo, and keep image pinning (no floating `latest`) unless explicitly requested.
 
 ## Scoped Rules (load before working in these areas)
