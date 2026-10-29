@@ -40,3 +40,7 @@ If you want AdGuard on a dedicated LAN IP, add a secondary IP to the host networ
 
 - Stack expects Docker network `proxy`.
 - DNS ports are published on `${IP}`.
+
+## Troubleshooting
+
+See [troubleshooting-log.md](troubleshooting-log.md) for past filtering investigations and the rule changes they produced.
