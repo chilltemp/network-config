@@ -1,0 +1,5 @@
+interface:
+  display_name: "adversarial-review"
+  short_description: "Codex adversarial review of a session, plan phase or plan"
+policy:
+  allow_implicit_invocation: false

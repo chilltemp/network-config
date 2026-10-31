@@ -66,6 +66,14 @@
 - Do not commit plaintext secrets.
 - Avoid mass-normalizing compose files unless explicitly requested.
 
+## Agent Skills (`agent-skills/`)
+
+- [agent-skills](../agent-skills) holds machine-wide skills for Claude Code and Codex (`next-phase`, `adversarial-review`), kept as one generic copy. [agent-skills/README.md](../agent-skills/README.md) is the source of truth for setup and for what a repo must provide.
+- They are not homelab infrastructure: they run against the git repo of the caller's current directory, never against this repo, which has no queue.
+- `install.sh` links them into `~/.agents/skills`, `~/.claude/skills` and `~/.claude-secondary/skills`, and writes `~/.codex/rules/agent-skills.rules`. Re-run it after adding a skill; never hand-edit the links or the rules file.
+- Keep each `SKILL.md`, script and brief generic: no repo names, user names or expanded home paths. A `SKILL.md` names its script by `~/.agents/skills/<skill>/scripts/…`, and tells Codex to write the home directory out, because only the absolute path matches the Codex rule.
+- This repo is public. Nothing private goes in a skill or its README.
+
 ## Key References
 
 - Provisioning workflow: [Ansible/README.md](../Ansible/README.md)
