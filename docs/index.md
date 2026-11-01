@@ -42,7 +42,11 @@ Multi-phase implementation plans in `docs/plans/`. None yet.
 
 Snapshots taken to be carried elsewhere — deliberately not maintained to reality.
 
-None in git yet. The operator's 2026-11-01 brain dump, which seeded the queue, is local-only at
+- [`handoffs/2026-11-01-queue-visual-handoff.md`](handoffs/2026-11-01-queue-visual-handoff.md) —
+  how the queue was drawn as an inline Atrium HTML board (steps, commands, page source). Possible
+  future workflow; TBD, not a queue item.
+
+The operator's 2026-11-01 brain dump, which seeded the queue, is local-only at
 `private/handoffs/2026-11-01-network-stuff-i-remember.md` (gitignored) until QN-1 picks a private
 docs home.
 
