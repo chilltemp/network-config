@@ -12,7 +12,8 @@ summaries are not the deliverable.
   are fine.
 - ⛔ **Never run `adversarial-review`**, by `$adversarial-review`, `/adversarial-review` or its
   script, even when the transcript you read shows it invoked. That invocation was the user's, and
-  you are its result. (The script also refuses from a `Review: …` room.)
+  you are its result. (The script also refuses from a pane or room named `Review: …`.) Keep
+  your pane's `Review: …` name: never rename it.
 - Read the repo's core instructions first: `AGENTS.md` at the repo root, else `CLAUDE.md`. Then
   read every file it says is the source of truth, and every rule file its routing sends the
   target's files to, including the one for plans. A violated repo rule is a finding.

@@ -81,8 +81,9 @@ escalation each time.
 - **A reviewer never starts a review.** A `session` reviewer reads a transcript that shows
   `/adversarial-review` typed, and the rule above lets the script run with no prompt, so a reviewer
   that took it as a request could chain reviewers. `reviewer.md` forbids it, and the script refuses
-  when the calling pane's room starts `Review: ` (every reviewer's room), or when it cannot list
-  panes to check. `next-phase` has no such guard: chaining phases is its job.
+  when the calling pane's name or room starts `Review: ` (it names every reviewer pane that way
+  before sending the prompt, and opens it split beside the caller), or when it cannot list panes
+  to check. `next-phase` has no such guard: chaining phases is its job.
 
 ## What a repo must provide
 

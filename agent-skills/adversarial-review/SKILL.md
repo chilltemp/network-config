@@ -1,12 +1,13 @@
 ---
 name: adversarial-review
-description: Open a Codex room (code-reviews profile) for an adversarial review of the current session, plan phase or plan; explicit invocation only
+description: Open a Codex pane beside this one (code-reviews profile) for an adversarial review of the current session, plan phase or plan; explicit invocation only
 argument-hint: 'session | phase [<ID>] [--phase <id>] | plan [<ID>] [--profile <slug>]'
 disable-model-invocation: true
 allowed-tools: Bash(~/.agents/skills/adversarial-review/scripts/adversarial-review.sh:*)
 ---
 
-Start an adversarial review in a **new** atrium pane. The script opens it as **Codex** with the
+Start an adversarial review in a **new** atrium pane, split to the right of this one and named
+`Review: …`. The script opens it as **Codex** with the
 `code-reviews` launch profile, whichever agent runs this skill; `--profile <slug>` picks another
 Codex profile. The reviewer follows [reviewer.md](reviewer.md) and messages its findings back to
 this pane. It works on the git repo of the current directory.
