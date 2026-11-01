@@ -66,7 +66,7 @@
 - Many stacks rely on host path variables (for example `HOST_DATA_PATH`) and stack-specific host prerequisites.
 - Traefik-centric networking is common across stacks (shared `proxy` network and labels where applicable).
 - When setting up Traefik on a new server, include the host in AdGuardHome DNS records for required FQDN routing.
-- Keep instructions, handoffs, and investigation logs in discoverable repo files (for example a service folder's `troubleshooting-log.md`), not in agent memory. Multiple agents work in this repo, and memory is only visible to the agent that wrote it.
+- Keep instructions, handoffs, and investigation logs in discoverable repo files, not in agent memory. ⛔ A troubleshooting or investigation log that names household devices, people or LAN IPs goes in the gitignored `private/` folder at its repo path (e.g. `private/adguard-home/troubleshooting-log.md`), never in tracked files. The stack's README says where the log is, without linking to it. Multiple agents work in this repo, and memory is only visible to the agent that wrote it.
 
 ## Internal Domain (`home-lan.net`)
 

@@ -7,8 +7,9 @@
 
 Knowledge about the network is spread across five places, and none of them is complete:
 
-- **This repo**, which is public on GitHub. It holds compose stacks, the Oversized-LLM Ansible, and
-  investigation logs such as [`adguard-home/troubleshooting-log.md`](../../adguard-home/troubleshooting-log.md).
+- **This repo**, which is public on GitHub. It holds compose stacks and the Oversized-LLM Ansible.
+  Its AdGuard investigation log moved to the gitignored `private/adguard-home/troubleshooting-log.md`
+  on 2026-11-01 (see the Decisions section).
 - **`chillweb.net`**, a public Nextra site on Vercel with how-to notes: homepage tweaks, Uptime Kuma,
   and the scanner Pi build. It is written as tutorials, not as an inventory.
 - **`homepage` config** on furball and hairball, synced by Syncthing. It is the operator's real index
@@ -27,7 +28,7 @@ are open, and what is unpatched. That output needs a decided home before anyone 
   | Tier    | Lives in                         | Examples                                                                                                                |
   | ------- | -------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
   | Public  | this repo, `chillweb.net`        | compose stacks, READMEs without secrets, generic how-tos, `home-lan.net` names, the shape of the network                |
-  | Private | the private home (REQ-DOCS-02)   | full inventory (IPs, MACs, ports, VLANs), auth/TLS status per service, known weaknesses, backup map, internal runbooks   |
+  | Private | the private home (REQ-DOCS-02)   | full inventory (IPs, MACs, ports, VLANs), auth/TLS status per service, known weaknesses, backup map, internal runbooks, troubleshooting and investigation logs that name household devices, people or LAN IPs |
   | Secret  | a vault or password manager only | passwords, API tokens, ansible-vault files, Portainer env values, homepage widget API keys                              |
 
 - **REQ-DOCS-02 — A private home.** Choose one: a private GitHub repo, a repo on the homelab's Forgejo,
@@ -50,8 +51,9 @@ are open, and what is unpatched. That output needs a decided home before anyone 
 - **REQ-DOCS-07 — Agent access.** The private home gets its own agent rules (`CLAUDE.md` or
   `AGENTS.md`) and a `ccl` entry. The queue stays in this repo.
 - **REQ-DOCS-08 — `private/`'s future.** The gitignored `private/` folder in this repo was added on
-  2026-11-01 as an interim local-only home. It holds the brain dump, and QN-3's furball notes will go
-  there. Either retire it, moving its contents to the chosen home, or keep it with a defined role.
+  2026-11-01 as an interim local-only home. It holds the brain dump and the AdGuard troubleshooting
+  log, and QN-3's furball notes will go there. Either retire it, moving its contents to the chosen
+  home, or keep it with a defined role.
 
 ## Non-goals
 
@@ -74,8 +76,18 @@ Nothing. QN-2 is blocked on this.
 3. Does homepage's config hold API keys?
 4. Where do Secret values live today, apart from ansible-vault and Portainer? Is there a password
    manager?
-5. Should the existing troubleshooting logs, which name LAN IPs and devices, stay public?
+5. ~~Should the existing troubleshooting logs, which name LAN IPs and devices, stay public?~~
+   Decided: no (see Decisions).
 6. `private/`: retire it once the private home exists, or keep it, and if so, for what?
+
+## Decisions
+
+- **2026-11-01 — Troubleshooting and investigation logs are Private.** These are logs that name
+  household devices, people or LAN IPs, such as the AdGuard filtering log, with its phones, apps and
+  per-device rules. They don't go in this public repo. Until REQ-DOCS-02 picks the private home, they
+  live in the gitignored `private/` folder, mirroring the repo path
+  (`private/adguard-home/troubleshooting-log.md`). The stack's README says where the log is, without
+  linking to it. This answers open question 5 and fills one Private row of REQ-DOCS-01.
 
 ## Notes for planning
 

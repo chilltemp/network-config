@@ -76,4 +76,5 @@ QN-1, because the inventory needs a decided home.
 - Discovery will take several sessions. Split the phases by source, not by host.
 - Phase 0 spike: confirm that the old Unifi controller can still export clients and config, through
   the UI or its API, before planning around it.
-- Unidentified devices already listed in the AdGuard troubleshooting log are good first targets.
+- Unidentified devices already listed in the AdGuard troubleshooting log (local-only,
+  `private/adguard-home/troubleshooting-log.md`) are good first targets.

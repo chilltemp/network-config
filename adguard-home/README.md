@@ -43,4 +43,6 @@ If you want AdGuard on a dedicated LAN IP, add a secondary IP to the host networ
 
 ## Troubleshooting
 
-See [troubleshooting-log.md](troubleshooting-log.md) for past filtering investigations and the rule changes they produced.
+Past filtering investigations and the rule changes they produced are in a local-only log,
+`private/adguard-home/troubleshooting-log.md`. It is gitignored because it names household devices
+and LAN IPs, and stays there until QN-1 picks a private docs home.

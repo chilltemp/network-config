@@ -19,7 +19,7 @@ When `/init` is invoked, update `.github/copilot-instructions.md` and the releva
 - **Compose stacks** are standalone — don't mass-normalize compose files across the repo, and keep image pinning (no floating `latest`) unless explicitly requested.
 - **The queue** is [`docs/proposals/_implementation-order.md`](docs/proposals/_implementation-order.md), ids `QN-<n>`. ⛔ **Wrong session:** an id with another repo's prefix (`QK-` = `karens-database`, `QR-` = `readingorder.info-2025`), or one not in the queue, means the wrong session. Stop and say so; never look for a near match.
 - **Proposals, not plans**: each queue row starts as a proposal; a plan is written in its own session, one proposal at a time. Changes to live hosts follow §Live-Host Safety in the planning rules.
-- **Public repo**: until QN-1 decides the private docs home, no per-service security findings (missing auth, plain HTTP, open ports, old versions) go in this repo. Local-only notes go in the gitignored `private/` folder; never link to it from a tracked file, since the link breaks on GitHub.
+- **Public repo**: until QN-1 decides the private docs home, no per-service security findings (missing auth, plain HTTP, open ports, old versions) go in this repo. Local-only notes go in the gitignored `private/` folder; never link to it from a tracked file, since the link breaks on GitHub. That includes troubleshooting and investigation logs that name household devices, people or LAN IPs (e.g. `private/adguard-home/troubleshooting-log.md`).
 - **Scratch** goes in the gitignored `.tmp/<task>/` inside this repo — ⛔ never `/tmp`, which is outside the working directory and makes every access ask for permission.
 
 ## Scoped Rules (load before working in these areas)

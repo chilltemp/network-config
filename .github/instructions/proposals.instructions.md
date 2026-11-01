@@ -21,7 +21,8 @@ in `docs/plans/` — see [planning.instructions.md](planning.instructions.md) §
 - File name `<topic>-proposal.md`. The line after the `#` title is
   `**Queue:** QN-<n> · **Affects:** <hosts, stacks, external systems>`.
 - Sections, in order: **Why** · **Requirements** · **Non-goals** · **Offline behavior** ·
-  **Depends on** · **Open questions** · **Notes for planning** (optional) · **Outcome** (only for
+  **Depends on** · **Open questions** · **Decisions** (operator rulings, dated, once any are made) ·
+  **Notes for planning** (optional) · **Outcome** (only for
   single-session work done without a plan; it carries the live-host safety items before the change —
   [planning.instructions.md](planning.instructions.md) §Live-Host Safety).
 - Requirements carry ids `REQ-<AREA>-<nn>` with a bold short name. `<AREA>` is unique to the proposal
@@ -47,6 +48,8 @@ section):
   list waits for the private home.
 - ⛔ **No secrets, public IPs, MAC addresses, serial numbers, license keys, Tailscale addresses, or
   WAN port-forward details.**
+- ⛔ **No troubleshooting or investigation logs that name household devices, people or LAN IPs.**
+  They go in `private/<repo path>` (QN-1 §Decisions, 2026-11-01).
 - ✅ Hostnames, `home-lan.net` names (copilot-instructions §Internal Domain), product names, and the
   shape of the network are fine.
 - For a **named** host or service, state the requirement, never the installed state that makes it
