@@ -24,6 +24,41 @@
   - Run `ansible-playbook playbooks/provision_gpu_server.yml --ask-vault-pass` from [Ansible](../Ansible).
 - Encrypt secrets with ansible-vault and keep secret values out of plaintext files.
 
+## Collaboration Preference
+
+- Don't assume when requirements are ambiguous. Ask clarifying questions until you are confident; batch 3–5 focused questions per round, with no overall cap.
+- When several valid approaches exist, present concise options and ask.
+- Prefer explicit confirmation over inferred intent for scope, naming, and any change to a live host.
+- **Exception — breakage with evidence:** given a concrete failure (error, log, failing check), investigate and fix it without hand-holding — but disruptive steps on live hosts still need the operator (see [planning.instructions.md](instructions/planning.instructions.md) §Live-Host Safety).
+
+## Agent Workflow
+
+- **Plan first** for any non-trivial task (3+ steps, ambiguity, or a change to a live host). If something goes sideways, stop and re-plan.
+- **Delegate exploration** to read-only sub-agents where your tool has them, one task each, to keep the main context clean.
+- **Scratch goes in `.tmp/`:** sub-agent briefs, downloads, exports, rendered previews and any other scratch go in the repo's gitignored `.tmp/<task>/` — ⛔ never `/tmp` or another path outside the repo. Outside the working directory, every agent read or write needs a permission approval. Give each download its own new empty folder there. `.tmp/` is disposable: anything worth keeping moves into a real doc.
+- **Lessons:** check [docs/ai-lessons.md](../docs/ai-lessons.md) before implementing. After any user correction, capture the pattern there and promote a durable rule ([editing.instructions.md](instructions/editing.instructions.md) §Self-Improvement Loop).
+- **Verification before done:** prove it with evidence — command output, `dig`, screenshots, exports. Ask: "would a careful sysadmin sign off on this?"
+- **The queue:** [docs/proposals/_implementation-order.md](../docs/proposals/_implementation-order.md) is the to-do list; ids are `QN-<n>`. A `QN-` row that names other hosts or stacks is the explicit request the Oversized-LLM scope guardrail asks for.
+- ⛔ **Wrong session:** queue ids are per repo — `QN-<n>` here, `QK-<n>` in `karens-database`, `QR-<n>` in `readingorder.info-2025`. An id with another repo's prefix, or one not in [the queue](../docs/proposals/_implementation-order.md), means the wrong session. **Stop and say so; never look for a near match.**
+
+## Docs Lifecycle
+
+- [docs/index.md](../docs/index.md) — curated index of every doc in `docs/`. Update it whenever a doc is added, moved, archived, or re-scoped.
+- `docs/proposals/` — unbuilt work as `REQ-` requirements, one queue row each ([proposals.instructions.md](instructions/proposals.instructions.md)). Proposals, not plans.
+- `docs/plans/` — multi-phase implementation plans, one per proposal, written in their own session ([planning.instructions.md](instructions/planning.instructions.md)). They stay live until the operator asks to archive them; then `git mv` to `docs/archive/plans/` and repoint inbound links.
+- `docs/handoffs/` — snapshots taken to be carried elsewhere; deliberately **not** maintained to reality.
+- Service-folder READMEs stay the source of truth for each stack; plans link to them rather than duplicating.
+- ⛔ This repo is public. Until QN-1 decides the private docs home, docs here carry no per-service security findings — see [proposals.instructions.md](instructions/proposals.instructions.md) §Public Safety.
+- `private/` (gitignored) — local-only notes that must not be published, until QN-1 picks a private home. Not in git, so it has no history and exists only on this machine. Name a file there as a code span; never link to it from a tracked file.
+
+## Scoped Instructions
+
+- [instructions/planning.instructions.md](instructions/planning.instructions.md) — a `QN-` id, turning a proposal into a plan, working a plan in `docs/plans/`, or editing the queue. Phase structure, live-host safety, completion logs, queue format.
+- [instructions/proposals.instructions.md](instructions/proposals.instructions.md) — authoring or revising a proposal in `docs/proposals/`. Required sections, offline/home-grade rules, public safety.
+- [instructions/editing.instructions.md](instructions/editing.instructions.md) — editing this file, a scoped instruction file, `CLAUDE.md`, or `docs/ai-lessons.md`.
+- [instructions/ansible-safety.instructions.md](instructions/ansible-safety.instructions.md) — anything under `Ansible/**`.
+- [instructions/compose-stack-conventions.instructions.md](instructions/compose-stack-conventions.instructions.md) — any `*/docker-compose.yml`.
+
 ## Conventions
 
 - Each service folder README is the source of truth for that stack's prerequisites and variables.
@@ -31,6 +66,7 @@
 - Many stacks rely on host path variables (for example `HOST_DATA_PATH`) and stack-specific host prerequisites.
 - Traefik-centric networking is common across stacks (shared `proxy` network and labels where applicable).
 - When setting up Traefik on a new server, include the host in AdGuardHome DNS records for required FQDN routing.
+- Keep instructions, handoffs, and investigation logs in discoverable repo files (for example a service folder's `troubleshooting-log.md`), not in agent memory. Multiple agents work in this repo, and memory is only visible to the agent that wrote it.
 
 ## Internal Domain (`home-lan.net`)
 
@@ -44,7 +80,7 @@
 
 ## Oversized-LLM Guardrails
 
-- Keep scope focused on Oversized-LLM unless explicitly asked to modify other stacks.
+- Keep scope focused on Oversized-LLM unless explicitly asked to modify other stacks. A `QN-` queue row naming other hosts or stacks counts as that request.
 - Oversized-LLM should run only:
   - `ollama_server`
   - `portainer_agent`
@@ -69,7 +105,7 @@
 ## Agent Skills (`agent-skills/`)
 
 - [agent-skills](../agent-skills) holds machine-wide skills for Claude Code and Codex (`next-phase`, `adversarial-review`), kept as one generic copy. [agent-skills/README.md](../agent-skills/README.md) is the source of truth for setup and for what a repo must provide.
-- They are not homelab infrastructure: they run against the git repo of the caller's current directory, never against this repo, which has no queue.
+- They are not homelab infrastructure: they run against the git repo of the caller's current directory. That is this repo only when the caller is in it; its queue uses `QN-`.
 - `install.sh` links them into `~/.agents/skills`, `~/.claude/skills` and `~/.claude-secondary/skills`, and writes `~/.codex/rules/agent-skills.rules`. Re-run it after adding a skill; never hand-edit the links or the rules file.
 - Keep each `SKILL.md`, script and brief generic: no repo names, user names or expanded home paths. A `SKILL.md` names its script by `~/.agents/skills/<skill>/scripts/…`, and tells Codex to write the home directory out, because only the absolute path matches the Codex rule.
 - This repo is public. Nothing private goes in a skill or its README.

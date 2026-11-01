@@ -17,6 +17,10 @@ When `/init` is invoked, update `.github/copilot-instructions.md` and the releva
 - **Secrets**: never commit plaintext secrets. Secret values live in `ansible-vault`-managed files; repo `.env` and READMEs are reference-only (`.env` is gitignored). Runtime values are entered in the Portainer Stack UI.
 - **Internal domain**: `home-lan.net` is internal-only (records only in AdGuardHome, public Cloudflare zone kept empty, one `*.home-lan.net` wildcard cert). Committing its hostnames is fine; don't add public DNS records or per-host certs without approval. See "Internal Domain" in copilot-instructions.md.
 - **Compose stacks** are standalone — don't mass-normalize compose files across the repo, and keep image pinning (no floating `latest`) unless explicitly requested.
+- **The queue** is [`docs/proposals/_implementation-order.md`](docs/proposals/_implementation-order.md), ids `QN-<n>`. ⛔ **Wrong session:** an id with another repo's prefix (`QK-` = `karens-database`, `QR-` = `readingorder.info-2025`), or one not in the queue, means the wrong session. Stop and say so; never look for a near match.
+- **Proposals, not plans**: each queue row starts as a proposal; a plan is written in its own session, one proposal at a time. Changes to live hosts follow §Live-Host Safety in the planning rules.
+- **Public repo**: until QN-1 decides the private docs home, no per-service security findings (missing auth, plain HTTP, open ports, old versions) go in this repo. Local-only notes go in the gitignored `private/` folder; never link to it from a tracked file, since the link breaks on GitHub.
+- **Scratch** goes in the gitignored `.tmp/<task>/` inside this repo — ⛔ never `/tmp`, which is outside the working directory and makes every access ask for permission.
 
 ## Scoped Rules (load before working in these areas)
 
@@ -24,6 +28,9 @@ When `/init` is invoked, update `.github/copilot-instructions.md` and the releva
 | ----------------------------------------------------- | --------------------------------------------------------------------- |
 | Editing any `*/docker-compose.yml` stack              | `.github/instructions/compose-stack-conventions.instructions.md`      |
 | Editing anything under `Ansible/**`                   | `.github/instructions/ansible-safety.instructions.md`                 |
+| A `QN-<n>` id, a plan in `docs/plans/`, or the queue  | `.github/instructions/planning.instructions.md`                       |
+| Authoring or revising a proposal in `docs/proposals/` | `.github/instructions/proposals.instructions.md`                      |
+| Editing `copilot-instructions.md`, a scoped rule file, this file, or `docs/ai-lessons.md` | `.github/instructions/editing.instructions.md` |
 
 For reviewing infra changes, an `infra-reviewer` agent definition exists at `.github/agents/infra-reviewer.agent.md` (Copilot agent; checks exposure/firewall/secret regressions and the Ansible-vs-Portainer boundary).
 

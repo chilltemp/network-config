@@ -9,7 +9,8 @@ it a prompt; the work happens there, not in the pane that ran the skill.
 | `next-phase` | Starts the next phase of a queue item in a new **Claude Code** pane: the ⏸ paused phase, else the first ⬜. Refuses while a phase is 🟡, or when more than one is ⏸. | The user, or the agent when asked to |
 | `adversarial-review` | Opens a read-only **Codex** reviewer (the `code-reviews` launch profile) on the current session, a plan phase or a whole plan. The reviewer follows [`reviewer.md`](adversarial-review/reviewer.md) and messages its findings back. | **Explicit invocation only:** `/adversarial-review` in Claude Code, `$adversarial-review` or `/skills` in Codex (see §Codex for the one gap) |
 
-Both run against the git repo of the **current directory**, never against this one.
+Both run against the git repo of the **current directory**. That is this repo only when the caller
+is in it.
 
 ```
 agent-skills/
@@ -105,7 +106,7 @@ escalation each time.
 ## Adding a repo
 
 1. Pick a prefix no other repo uses. Today: `QK-` is `karens-database`, `QR-` is
-   `readingorder.info-2025`; `QI-` is legacy and appears in both.
+   `readingorder.info-2025`, `QN-` is `network-config`; `QI-` is legacy and appears in the first two.
 2. Add the queue, the `**Status:**` lines and the wrong-session rule above.
 3. Check from the repo root:
    `~/.agents/skills/next-phase/scripts/next-phase.sh <ID> --dry-run`.

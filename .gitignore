@@ -1,6 +1,13 @@
 .env
 bin/node_modules/
 
+# Agent scratch: sub-agent briefs, downloads, exports, previews. Never /tmp.
+/.tmp/
+
+# Local-only notes that must not be published (this repo is public), until QN-1
+# picks a private docs home. Not backed up by git.
+/private/
+
 # Claude Code config-dir artifacts — created if CLAUDE_CONFIG_DIR ever points at
 # this repo (root-anchored so real subdirs like Ansible/cache are unaffected).
 /.last-cleanup
