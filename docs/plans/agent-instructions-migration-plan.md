@@ -1,6 +1,6 @@
 # QN-17 — Agent instructions migration — plan
 
-**Status:** Phase 1 ⬜ · Phase 2 ⬜ · Phase 3 ⬜ · Phase 4 ⬜
+**Status:** Phase 1 ✅ · Phase 2 ⬜ · Phase 3 ⬜ · Phase 4 ⬜
 
 Written 2026-11-01 from [agent-instructions-migration-proposal][proposal], which stays as the
 requirements doc (REQ-AGENT-01…10) and records the rulings. Queue row **QN-17**, sprint `current`.
@@ -155,6 +155,7 @@ The contract until Phase 2 turns it into `.claude/rules/editing.md` (D16).
 ### Move map (Phase 2)
 
 Frontmatter: `description:` stays on one line, `applyTo:` becomes a `paths:` block list, `name:` goes.
+Quote a glob that starts with `*` (`'**/docker-compose.yml'`): bare, YAML reads it as an alias.
 Rule file names stay, less `.instructions`.
 
 | Old path | New path | `paths:` |
@@ -397,10 +398,95 @@ Commit on `main` (D7), only when the operator asks.
   planted header/log mismatch in a temp copy fails it.
 - `git status` shows only `tooling/agent-guard/`, this plan and the queue.
 
-**Completion log** — _status: ⬜ not started_
+**Completion log** — _status: ✅ done_ (2026-11-02)
 
-<!-- HANDOFF: what landed · acceptance evidence · host state left behind ·
-     every decision/deviation/gotcha + exact name/value the next phase consumes -->
+**What landed.** `tooling/agent-guard/check.mjs` (14 checks, 1,085 lines with comments) and
+`tooling/agent-guard/check.test.mjs` (148 tests, after the review fixes). Plain ESM on Node 24.20.0, no dependencies, no
+`package.json`. No host touched; no instruction file touched.
+
+**How the fixtures prove each check can fail.** `goodRepo()` builds a temp git repo in the
+post-Phase-2 layout (`AGENTS.md` with a routing table, `CLAUDE.md` = `@AGENTS.md`, the five rules,
+seven rationale files with one real entry, the inbox, a plan and its queue row, a linked repo skill,
+history files). It passes all 14 checks. Then each of 25 mutations, at least one per check, must fail
+**exactly** that check and no other (`r.failing()` = `[check]`). A test also asserts every key of
+`CHECKS` has a mutation, so a check added later without a failing fixture fails the suite. The
+primitives keep table fixtures: Markdown, frontmatter, discovery (staged, untracked, ignored,
+deleted, dangling symlink), and QI-30 G1f's `@` table (imported: bare, frag, bold, italic, link; not
+imported: span, punct, fence, plus HTML, comments, email and link destinations).
+
+**Deviations from karens-database `tooling/agent-guard/src/` (diffed against it, `ec4c870`):**
+
+- One file of checks instead of 11 modules plus vitest specs over the live tree. Each check is a
+  function `(repo) => problems[]`; `runChecks(root, only)` runs them. The siblings' "live tree" tests
+  are the CLI run; their fixtures are `check.test.mjs`.
+- **Frontmatter** is a line parser, not `js-yaml`. It accepts only `key: value` lines, a one-line
+  `description:` and a `paths:` block list of `  - glob` items. It is stricter: an unparsed line, a
+  duplicate key, or an unclosed quote is a problem rather than a YAML error.
+- **`@` model** is a line parser, not `marked`: fences, code spans, HTML tags and comments are blanked;
+  `@path` starts at a line start, whitespace, `*`, `_` or `[`; the path stops at whitespace, `*` or
+  `]`; a trailing `_` is dropped as closing emphasis. Docblock names 2.1.316.
+- The repo root is `git rev-parse --show-toplevel` of the **working directory**, not of the module,
+  so the guard checks the checkout it runs in. Every function takes the root; no global.
+- **`rationale` gains `strayWhyLinks`**: a `[why](…)` link must resolve to the paired rationale file
+  with an anchor (§Design → Guard). QI-30 had no such check.
+- **The inbox's 200-line cap is `inbox`'s**, not `budgets`', so the cap fixture fails one check.
+- **History set:** `_IDEAS_/` added to the prefixes; no completed-plans list (this repo has none);
+  `docs/index.md`'s exempt section is `## Archive` (QI-30: `## Archive:`). The stale-exemption check
+  lives in `retired-paths`.
+- `routing` reports a missing `AGENTS.md`, heading or table as problems instead of asserting.
+  `plan-status` reports a missing queue, or a queue with no rows read.
+- `ALLOWED_DRIFT` dropped: empty in QI-30, and nothing here needs it.
+- Temp repos go in `.tmp/agent-guard-tests/`, removed after the run, never `os.tmpdir()`.
+- Size: 1,085 + 743 lines against the plan's ~400–500 estimate; QI-30's is ~970 + ~1,500.
+
+**Review fixes** (`/adversarial-review phase QN-17`, Codex `code-reviews`; no High, no open
+questions; the operator accepted all four):
+
+| Finding | Fix |
+| ------- | --- |
+| **M1** — The frontmatter parser passed YAML that js-yaml rejects or mis-types: `- **/docker-compose.yml` (an alias), `description: false`, `- 42` | `yamlString()` reads each one-line scalar as js-yaml would. A plain scalar fails on an indicator start, a `: ` or ` #` inside, or a boolean, null or number; quoted forms are strings. 8 fixtures. ⚠️ Phase 2: quote `'**/docker-compose.yml'` (D19) |
+| **M2** — The `@` parser missed `~~@x~~` and `>@x`, and flagged indented code and HTML blocks | `blankBlocks()` blanks HTML blocks (block-tag lines; lone-tag lines after a blank) and indented code (not a list or lazy continuation), and strips blockquote markers; `~` starts a text run and a trailing `~` is dropped. 11 fixtures. Cross-checked against the sibling's `marked` 18.1.1 walker: 0 differences in 34 cases (`.tmp/qn-17/phase-1/at-crosscheck.mjs`, scratch) |
+| **M3** — A reference-style `[why][w]` escaped the pairing check | `strayWhyLinks()` resolves full, collapsed and shortcut references through their definitions; an undefined reference is text. 5 assertions |
+| **L1** — `--only constructor` passed name validation, then crashed with exit 1 | `Object.hasOwn(CHECKS, …)`; the CLI fixture tries `constructor`, `toString`, `__proto__` (exit 2) |
+
+**Acceptance evidence** (final runs, after every closeout edit and the review fixes):
+
+```text
+$ node --test tooling/agent-guard/check.test.mjs
+ℹ tests 148 · suites 12 · pass 148 · fail 0          (exit 0)
+
+$ node tooling/agent-guard/check.mjs --only plan-status
+✓ plan-status
+All checks passed.                                   (exit 0)
+
+# Temp copy (.tmp/qn-17/phase-1/copy: this plan + the queue, git add -A), header planted ✅ vs log 🟡:
+✗ plan-status (2)
+    docs/plans/agent-instructions-migration-plan.md: Phase 1: header ✅, completion log 🟡
+    QN-17: the queue says Next: Phase 1, the plan's current phase is 2
+                                                     (exit 1)
+
+$ git status --short
+ M docs/plans/agent-instructions-migration-plan.md
+ M docs/proposals/_implementation-order.md
+?? tooling/
+```
+
+**Handoff for Phase 2:**
+
+- A full run today fails 7 checks, all expected: `layout`, `retired-paths` (85 hits plus the missing
+  ledger), `inbox`, `rationale`, `routing`, `core`, `budgets` (`CLAUDE.md` is 58 lines). `links`,
+  `anchors`, `citations`, `at-rule`, `frontmatter` and `skills` pass vacuously (no rules yet).
+- ⚠️ **`inbox` found a real hit:** `docs/ai-lessons.md:18`'s example `docs/ai-lessons.md#the-slug`
+  reads as a dead slug. Phase 2 writes it as `#<slug>`, which cannot match.
+- `NAMED_EXEMPTIONS` names `docs/agents/qn-17-rule-ledger.md`; `retired-paths` fails until Phase 2
+  creates it.
+- Constants later phases edit in `check.mjs`: `REQUIRED_RULES` (Phase 3 adds `oversized-llm`),
+  `RETIRED_SURFACES` and `RETIRED_PATTERNS` (Phase 4 adds the three `.github/` paths).
+- `plan-status` and the live scans read **tracked** files: `git add -N` a new plan or doc before the
+  run. Governed files (`AGENTS.md`, `CLAUDE.md`, `.claude/rules/`, skills, rationale) are seen
+  untracked.
+- `--only <check>` takes one name; an unknown name exits 2. The soft size table prints on a full run
+  and on `--only budgets`.
 
 ---
 
