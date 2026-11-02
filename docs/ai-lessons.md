@@ -19,4 +19,6 @@ instruction files. Governed by
 
 ## Current Staging Notes
 
-None yet.
+- **QN-17:** Before a plan names a command, run it once, in the state the phase will be in at that
+  step. The plan review found `node --test <dir>` fails on Node 24 and `next-phase --dry-run` refuses
+  while a phase is 🟡. Both would have failed a phase's acceptance check.

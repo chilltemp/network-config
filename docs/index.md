@@ -23,6 +23,7 @@ Unbuilt work as `REQ-` requirements, governed by
 | [`openobserve-decommission-proposal`](proposals/openobserve-decommission-proposal.md)         | QN-4  | Proposal |
 | [`backup-adequacy-proposal`](proposals/backup-adequacy-proposal.md)                           | QN-5  | Proposal |
 | [`dns-resilience-proposal`](proposals/dns-resilience-proposal.md)                             | QN-6  | Proposal |
+| [`vlan-adguard-proposal`](proposals/vlan-adguard-proposal.md)                                 | QN-18 | Proposal |
 | [`security-baseline-proposal`](proposals/security-baseline-proposal.md)                       | QN-7  | Proposal |
 | [`unifi-controller-upgrade-proposal`](proposals/unifi-controller-upgrade-proposal.md)         | QN-8  | Proposal |
 | [`traefik-consolidation-proposal`](proposals/traefik-consolidation-proposal.md)               | QN-9  | Proposal |
@@ -33,10 +34,15 @@ Unbuilt work as `REQ-` requirements, governed by
 | [`hairball-rebuild-proposal`](proposals/hairball-rebuild-proposal.md)                         | QN-14 | Proposal |
 | [`scanner-pi-docker-proposal`](proposals/scanner-pi-docker-proposal.md)                       | QN-15 | Proposal |
 | [`birdpi-cleanup-proposal`](proposals/birdpi-cleanup-proposal.md)                             | QN-16 | Proposal |
+| [`hass-adguard-retirement-proposal`](proposals/hass-adguard-retirement-proposal.md)           | QN-19 | Proposal |
 
 ## Plans
 
-Multi-phase implementation plans in `docs/plans/`. None yet.
+Multi-phase implementation plans in `docs/plans/`.
+
+| Doc                                                                               | Queue | Status |
+| --------------------------------------------------------------------------------- | ----- | ------ |
+| [`agent-instructions-migration-plan`](plans/agent-instructions-migration-plan.md) | QN-17 | Active |
 
 ## Handoffs
 

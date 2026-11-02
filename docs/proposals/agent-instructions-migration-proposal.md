@@ -47,17 +47,18 @@ Other problems:
 - **REQ-AGENT-04 — History out of rule text.** Dates, ticket ids and backstory move to rationale
   files, linked from the rule, wherever a rule carries them.
 - **REQ-AGENT-05 — Budgets.** `AGENTS.md` stays well inside Codex's 32 KiB read limit, and within
-  the sibling repos' line and byte budgets. Each rule file stays under 20,000 characters.
+  the sibling repos' line and byte budgets. Each rule file targets under 20,000 characters, a soft
+  limit as in `karens-database`.
 - **REQ-AGENT-06 — Rules match reality.**
   - The Oversized-LLM guardrails follow QN-11's outcome, or are marked dormant until it lands.
   - The Portainer rules stay until QN-12 changes them.
 - **REQ-AGENT-07 — Repo rules out of memory.** Memory notes that are really repo conventions move
-  into rule files: the Portainer GitOps-mode deploy. Commit-to-`main` moves only if the operator
-  answers yes to open question 5. Memory keeps only personal preferences.
-- **REQ-AGENT-08 — Tool settings.** Set the Copilot settings in `.vscode/settings.json` if Copilot
-  stays in use. Codex and the `adversarial-review` reviewer find the core through `AGENTS.md`.
-- **REQ-AGENT-09 — Kept honest.** Something checks layout, links, the routing table and budgets after
-  each edit.
+  into rule files: the Portainer GitOps-mode deploy and commit-to-`main`. Memory keeps only personal
+  preferences.
+- **REQ-AGENT-08 — Tool settings.** Copilot is dropped, so `.vscode/settings.json` gains no Copilot
+  settings. Codex and the `adversarial-review` reviewer find the core through `AGENTS.md`.
+- **REQ-AGENT-09 — Kept honest.** A guard script, run by hand, checks layout, links, the routing table
+  and budgets after each edit.
 - **REQ-AGENT-10 — Carried rules.** Rules added before the migration keep their intent, including
   scratch in `.tmp/` (added 2026-11-01).
 
@@ -79,22 +80,33 @@ rule content later, in the new layout.
 
 ## Open questions
 
-1. Is Copilot still used in this repo, or is it Claude Code plus Codex, as in `readingorder.info-2025`?
-2. How should REQ-AGENT-09 be met? This repo has no test pipeline, so the options are a small guard
-   script, modeled on `readingorder.info-2025`'s guard test, or a checklist in the editing rules.
-3. Should every rule file get a paired rationale file, as in `readingorder.info-2025`, or only the
-   rules that carry history? This repo's rules are small.
-4. The `infra-reviewer` Copilot agent: convert it to a shared skill, fold it into the
-   `adversarial-review` reviewer brief, or retire it?
-5. Should commit-to-`main` become a repo rule, or stay a personal preference?
+None. All are answered in §Decisions. The plan is
+[agent-instructions-migration-plan](../plans/agent-instructions-migration-plan.md).
+
+## Decisions
+
+Rulings of 2026-11-01. Items 1 and 3 apply the operator's earlier rulings from the sibling repos;
+items 2, 4, 5 and 6 were asked in the planning session.
+
+1. **Copilot is dropped; Claude Code and Codex are the live tools.** From `karens-database` QI-30's
+   2026-10-30 ruling: Copilot is not expected back. Nothing may depend on a Goose-free tree, because
+   the roster can change.
+2. **REQ-AGENT-09 is a dependency-free script, run by hand.** Not a checklist, and no git hook.
+3. **Every instruction file gets a paired rationale file.** From QI-88 D3, re-confirmed 2026-10-27,
+   and followed by QI-30.
+4. **The `infra-reviewer` Copilot agent is retired.** Its five checks are already rules, and
+   `adversarial-review` reports a violated repo rule as a finding.
+5. **Commit-to-`main` becomes a repo rule.** It is specific to this repo: both siblings use branches.
+6. **The Oversized-LLM guardrails move to one path-scoped rule file,** marked dormant until QN-11.
+   This meets REQ-AGENT-06, and QN-11 then edits one file.
 
 ## Notes for planning
 
-- Prior art, to read before planning:
-  - `readingorder.info-2025` QI-88: its plan, `docs/agents/qi-88-rule-ledger.md`, the spec above, and
-    `docs/agents/rationale/`.
-  - `karens-database` QI-30: `docs/proposals/instruction-and-docs-diet-proposal.md` and its section
-    "What QI-88 taught".
-- QI-88 verified the loading matrix for Claude Code 2.1.312 and Codex CLI 0.165.0. A Phase 0 spike
-  is needed only if the installed versions have moved enough to doubt it.
+- Prior art:
+  - `readingorder.info-2025` QI-88: `docs/archive/plans/arch-instruction-and-docs-diet-plan.md`,
+    `docs/archive/plans/qi-88-rule-ledger.md`, the spec above, and `docs/agents/rationale/`.
+  - `karens-database` QI-30: `docs/plans/instruction-and-docs-diet-plan.md`, and
+    `docs/proposals/instruction-and-docs-diet-proposal.md`'s section "What QI-88 taught".
+- QI-30's Phase 0 verified the loading matrix on 2026-11-01 for Claude Code 2.1.316 and Codex CLI
+  0.166.0, the installed versions, so no Phase 0 spike is needed.
 - This repo's rules total about 40 KB, so expect a few sessions, not QI-88's 27.
