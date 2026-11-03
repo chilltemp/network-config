@@ -65,4 +65,4 @@ QN-2, for the exposure map and the service list.
 ## Notes for planning
 
 Public safety: the per-service gap list belongs in the private docs home, never in this repo (see
-[`proposals.instructions.md`](../../.github/instructions/proposals.instructions.md) §Public safety).
+[`proposals.md`](../../.claude/rules/proposals.md#public-safety)).

@@ -7,7 +7,7 @@ section, this repo's "Portainer manages lifecycle" rules, Unraid-managed contain
 
 Portainer is focusing on enterprise customers and will give the community edition minimal support.
 The operator is considering Komodo or something else. This repo encodes Portainer throughout:
-`CLAUDE.md`, copilot-instructions, every stack README, and the GitOps-mode deploy habit.
+`AGENTS.md`, every stack README, and the GitOps-mode deploy habit.
 
 ## Requirements
 
@@ -26,7 +26,7 @@ The operator is considering Komodo or something else. This repo encodes Portaine
   templates, and which move to the manager.
 - **REQ-CM-04 — Migration shape, if switching.** Migrate host by host and stack by stack, keeping
   Portainer until the last stack moves.
-- **REQ-CM-05 — Rules follow.** Update `CLAUDE.md`, copilot-instructions, the Ansible guardrails, and
+- **REQ-CM-05 — Rules follow.** Update `AGENTS.md`, the Ansible guardrails, and
   each README's Deploy section in the same change as the switch. That change is the exception to
   "don't mass-normalize compose files", and it touches Deploy sections only.
 

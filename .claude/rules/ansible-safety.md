@@ -1,10 +1,12 @@
 ---
 description: "Use when editing Ansible playbooks, roles, inventory, or vault files for this repo. Enforces provisioning-only scope, firewall intent, and secret safety for Oversized-LLM."
-name: "Ansible Safety"
-applyTo: "Ansible/**"
+paths:
+  - 'Ansible/**'
 ---
 
 # Ansible Safety Guidelines
+
+Rules for `Ansible/**`. `AGENTS.md` holds the global rules.
 
 - Treat Ansible as host provisioning only. Do not add tasks, roles, or playbooks that create, update, or delete containers or Docker stacks.
 - Keep the active provisioning path centered on [Ansible/playbooks/provision_gpu_server.yml](../../Ansible/playbooks/provision_gpu_server.yml).

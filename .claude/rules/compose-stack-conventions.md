@@ -1,10 +1,12 @@
 ---
 description: "Use when editing docker-compose stacks in this repo. Covers Portainer-first runtime conventions, Traefik networking patterns, and safe change boundaries."
-name: "Compose Stack Conventions"
-applyTo: "*/docker-compose.yml"
+paths:
+  - '**/docker-compose.yml'
 ---
 
 # Compose Stack Conventions
+
+Rules for each stack's `docker-compose.yml`. `AGENTS.md` holds the global rules.
 
 - Top-level stack folders are standalone services. Avoid mass-normalizing compose files across the repo unless explicitly requested.
 - Runtime stack lifecycle is managed in Portainer UI/API, not by Ansible.

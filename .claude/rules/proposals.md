@@ -1,20 +1,20 @@
 ---
 description: "Use when authoring or revising a proposal in docs/proposals/. Covers required sections, the offline and home-grade requirements, public-safety limits for this public repo, and the Q&A → proposal → design split."
-name: "Proposal Authoring Rules"
-applyTo: "docs/proposals/**"
+paths:
+  - 'docs/proposals/**'
 ---
 
 # Proposal Authoring Rules
 
-What a document in `docs/proposals/` must contain. `.github/copilot-instructions.md` holds the
+What a document in `docs/proposals/` must contain. `AGENTS.md` holds the
 workspace-wide defaults; this file owns proposal structure.
 
 A **proposal** describes work that does not exist yet, as requirements with ids. ⛔ **It is not a
 plan:** no phases, no step lists, no commands to run. A later planning session turns it into a plan
-in `docs/plans/` — see [planning.instructions.md](planning.instructions.md) §From Proposal to Plan.
+in `docs/plans/` — see [From Proposal to Plan](planning.md#from-proposal-to-plan).
 
 ⛔ **`_implementation-order.md` is not a proposal.** It is the queue, governed by
-[planning.instructions.md](planning.instructions.md) §The Implementation Queue.
+[The Implementation Queue](planning.md#the-implementation-queue).
 
 ## Every Proposal
 
@@ -24,7 +24,7 @@ in `docs/plans/` — see [planning.instructions.md](planning.instructions.md) §
   **Depends on** · **Open questions** · **Decisions** (operator rulings, dated, once any are made) ·
   **Notes for planning** (optional) · **Outcome** (only for
   single-session work done without a plan; it carries the live-host safety items before the change —
-  [planning.instructions.md](planning.instructions.md) §Live-Host Safety).
+  [Live-Host Safety](planning.md#live-host-safety)).
 - Requirements carry ids `REQ-<AREA>-<nn>` with a bold short name. `<AREA>` is unique to the proposal
   (`DOCS`, `DISC`, `FURB`, …). ⛔ Ids are never renumbered; a dropped requirement is struck through,
   not reused.
@@ -50,13 +50,13 @@ section):
   WAN port-forward details.**
 - ⛔ **No troubleshooting or investigation logs that name household devices, people or LAN IPs.**
   They go in `private/<repo path>` (QN-1 §Decisions, 2026-11-01).
-- ✅ Hostnames, `home-lan.net` names (copilot-instructions §Internal Domain), product names, and the
+- ✅ Hostnames, `home-lan.net` names ([Internal Domain](../../AGENTS.md#internal-domain)), product names, and the
   shape of the network are fine.
 - For a **named** host or service, state the requirement, never the installed state that makes it
   necessary ("bring X to a supported release", not "X is N versions behind"). The installed state
   goes private.
-- Until then, local-only notes go in the gitignored `private/` folder (copilot-instructions
-  §Docs Lifecycle), named as a code span, never linked.
+- Until then, local-only notes go in the gitignored `private/` folder ([Docs
+  Lifecycle](../../AGENTS.md#docs-lifecycle)), named as a code span, never linked.
 
 ## Keep the Q&A → Proposal → Design Split
 
@@ -79,7 +79,7 @@ reintroduces it.
 
 ## References
 
-- [../copilot-instructions.md](../copilot-instructions.md) — workspace-wide defaults.
-- [planning.instructions.md](planning.instructions.md) — the queue format and the multi-phase plan
+- [AGENTS.md](../../AGENTS.md) — workspace-wide defaults.
+- [planning.md](planning.md) — the queue format and the multi-phase plan
   protocol.
 - [../../docs/index.md](../../docs/index.md) — the curated index every new proposal must join.

@@ -45,7 +45,7 @@ are open, and what is unpatched. That output needs a decided home before anyone 
 - **REQ-DOCS-05 — This repo's role.** Decide what stays public here. The proposed answer: stacks,
   Ansible, the queue and proposals stay here, while findings and the inventory go private. When it
   lands, replace the interim public-safety rule in
-  [`proposals.instructions.md`](../../.github/instructions/proposals.instructions.md) with the outcome.
+  [`proposals.md`](../../.claude/rules/proposals.md#public-safety) with the outcome.
 - **REQ-DOCS-06 — Homepage config.** Decide whether homepage's config goes into git, and in which
   tier. It probably holds widget API keys, which would make it Secret unless they are split out.
 - **REQ-DOCS-07 — Agent access.** The private home gets its own agent rules (`CLAUDE.md` or

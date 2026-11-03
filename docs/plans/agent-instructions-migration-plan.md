@@ -1,6 +1,6 @@
 # QN-17 — Agent instructions migration — plan
 
-**Status:** Phase 1 ✅ · Phase 2 ⬜ · Phase 3 ⬜ · Phase 4 ⬜
+**Status:** Phase 1 ✅ · Phase 2 ✅ · Phase 3 🟡 · Phase 4 ⬜
 
 Written 2026-11-01 from [agent-instructions-migration-proposal][proposal], which stays as the
 requirements doc (REQ-AGENT-01…10) and records the rulings. Queue row **QN-17**, sprint `current`.
@@ -526,10 +526,135 @@ content. No host touched. Rollback is `git revert`, so this lands as one commit.
 - At §Before ending a phase step 5, `~/.agents/skills/next-phase/scripts/next-phase.sh QN-17 --dry-run`
   selects Phase 3. It refuses while any phase is 🟡, so it cannot run before step 4.
 
-**Completion log** — _status: ⬜ not started_
+**Completion log** — _status: ✅ done_ (2026-11-02)
 
-<!-- HANDOFF: what landed · acceptance evidence · host state left behind ·
-     every decision/deviation/gotcha + exact name/value the next phase consumes -->
+**What landed.** `AGENTS.md` is the core (142 lines, 12,351 B, every line under 400 chars), with the
+routing table inside the first 16 KiB. `CLAUDE.md` is `@AGENTS.md` plus the three notes (7 lines). The
+five rule files moved to `.claude/rules/` with `paths:` frontmatter. `editing.md` is a port of
+karens-database's. There are seven rationale files, and `docs/agents/qn-17-rule-ledger.md` has 242 rows. Every
+live reference is repointed, the 12 `§` citations are links, and `docs/index.md` lists the ledger and
+the rationale folder. No host touched.
+
+**Operator picks at phase start.** The "Queue next steps" pane was open on this checkout, so the operator
+closed it before any edit. `editing.md` takes everything but the code-comment item, the `picomatch` note
+and the QI-30 links.
+
+**Decisions and deviations:**
+
+- **No contradiction** between `CLAUDE.md` and `copilot-instructions.md`, so nothing stopped for a ruling.
+  The ledger's `CLAUDE.md` table names each surviving twin.
+- **Four things `CLAUDE.md` §Critical Rules had and the core lacked** are now in `AGENTS.md`: the vault and
+  `.env` wording, "no per-host cert without approval" (§Internal Domain), image pinning, and the live-host
+  line (§Change Safety Rules). The example list and "the link breaks on GitHub" joined §Docs Lifecycle.
+- **"Rules there override any generic defaults"** survives as `AGENTS.md`'s lead line.
+- **`AGENTS.md` §Commands gains one line** that the guard is run by hand (R2). It is not in §`AGENTS.md`
+  shape.
+- **`ansible-safety.md` and `compose-stack-conventions.md` gain a lead sentence,** because the header
+  convention applies to a touched file. Their rules are unchanged.
+- **`editing.md` deviations from karens-database's at its current tree:** keeps this repo's "Never in agent
+  memory" bullet and ⛔/⚠️ symbols; adds the roster line (D4), a public-repo line, the YAML-alias note, §The
+  Guard (D5) and the `agent-skills/` warning; widens "read the source" to both siblings; the history list
+  adds `_IDEAS_/` and `docs/agents/rationale/`; the inbox entry format drops the mandatory date, because
+  this repo's inbox tags by queue id. Its rationale entries are condensed from the sibling's, and name no
+  QI-30 phase.
+- **Six rationale files are stubs** (D3); only `editing.rationale.md` has entries.
+- **Bare `AGENTS.md` and `CLAUDE.md` globs stay** in `editing.md`: both names exist only at the root.
+- **`docs/proposals/_implementation-order.md` loads both `planning.md` and `proposals.md`,** because
+  `docs/proposals/**` matches it. Same as `applyTo` before; harmless.
+- **`infra-reviewer`'s pointer** left with `CLAUDE.md` (ledger: retired, D6); the file goes in Phase 4.
+
+**Gotchas:**
+
+- `git mv` left an empty `.github/instructions/`, and the guard's `layout` check fails on it until
+  `rmdir`.
+- The transcript proof is in `attachment` lines: `instructions` lists the start files, `nested_memory` a
+  rule's arrival. `.agents/skills/**` has no file until Phase 4, so that probe used a temporary file, since
+  removed.
+- Follow [the lesson on Codex](../../.claude/rules/editing.md#loading-probes): the rollout check counts
+  `custom_tool_call` too, and was tried first on a session that used tools.
+
+**Acceptance evidence.** Claude Code 2.1.316, Codex 0.166.0: unchanged, so D9 needed no re-probe. One fresh
+session per `paths:` glob (`claude -p`, prompt on stdin, default context window, transcripts in
+`~/.claude/projects/`):
+
+```text
+.claude/rules/ansible-safety.md                    AGENTS×1  rules at start 0  → editing.md
+tooling/agent-guard/check.test.mjs                 AGENTS×1  rules at start 0  → editing.md
+.agents/skills/probe/note.md                       AGENTS×1  rules at start 0  → editing.md
+ollama/docker-compose.yml                          AGENTS×1  rules at start 0  → compose-stack-conventions.md
+docs/plans/agent-instructions-migration-plan.md    AGENTS×1  rules at start 0  → planning.md
+docs/ai-lessons.md                                 AGENTS×1  rules at start 0  → editing.md
+Ansible/README.md                                  AGENTS×1  rules at start 0  → ansible-safety.md
+docs/agents/qn-17-rule-ledger.md                   AGENTS×1  rules at start 0  → editing.md
+docs/proposals/_implementation-order.md            AGENTS×1  rules at start 0  → planning.md, proposals.md
+CLAUDE.md                                          AGENTS×1  rules at start 0  → editing.md
+docs/proposals/dns-resilience-proposal.md          AGENTS×1  rules at start 0  → proposals.md
+AGENTS.md                                          AGENTS×1  rules at start 0  → editing.md
+```
+
+Codex (`codex exec --sandbox read-only`, rollout `rollout-2026-11-02T19-13-28-01a19ec0-…`) quoted, verbatim:
+
+```text
+| edit `AGENTS.md`, `CLAUDE.md`, a rule, a rationale file, a repo skill, the guard or `docs/ai-lessons.md`, or are asked to codify a rule | `.claude/rules/editing.md` |
+
+function_call: 0  custom_tool_call: 0     (control, a session that used tools: 20)
+```
+
+Final checks:
+
+```text
+$ node tooling/agent-guard/check.mjs
+✓ plan-status
+✓ layout
+✓ frontmatter
+✓ retired-paths
+✓ links
+✓ anchors
+✓ inbox
+✓ citations
+✓ rationale
+✓ routing
+✓ core
+✓ at-rule
+✓ budgets
+✓ skills
+
+Rule file sizes (soft, never a failure):
+     12069 / 20000 ok   .claude/rules/editing.md
+     11855 / 20000 ok   .claude/rules/planning.md
+      4929 / 20000 ok   .claude/rules/proposals.md
+      1443 / 20000 ok   .claude/rules/ansible-safety.md
+      1355 / 20000 ok   .claude/rules/compose-stack-conventions.md
+
+All checks passed.
+(exit 0)
+
+$ node --test tooling/agent-guard/check.test.mjs
+ℹ tests 148
+ℹ pass 148
+ℹ fail 0
+
+$ next-phase.sh QN-17 --dry-run
+repo:   /Users/chill/github/network-config
+plan:   docs/plans/agent-instructions-migration-plan.md
+room:   QN-17 Phase 3
+prompt: do Phase 3 of QN-17
+```
+
+**Host state:** no host touched.
+
+**Handoff for Phase 3:**
+
+- `AGENTS.md` has 48 lines and ~10.1 KB of headroom against the working target (190 lines, 22,528 B).
+- The Oversized-LLM guardrails are still in `AGENTS.md` §Oversized-LLM Guardrails, §Change Safety Rules and
+  §Repository Scope, with copies in `ansible-safety.md` and `compose-stack-conventions.md`. Add
+  `oversized-llm` to `REQUIRED_RULES` in `check.mjs`, and its routing row.
+- "UI/API" remains in `AGENTS.md` §Repository Scope and §Commands, and in the compose rule.
+- `proposals.md`'s `QN-1 §Decisions, 2026-11-01` is unchanged: not an instruction-file citation, and Phase
+  3's history candidate. The "Adapted from" lead remains in `planning.md`; `editing.md` no longer has one.
+- A session opened before this phase is stale (R1): restart any pane on this checkout.
+- The work is uncommitted until the operator asks: `git add -N` was used on the new files. Land it as one
+  commit (rollback is `git revert`).
 
 ---
 
@@ -572,7 +697,7 @@ out of memory.
 - `MEMORY.md` lists one note, and both promoted rules are in a file every agent loads.
 - `AGENTS.md`'s headroom against the working target is recorded.
 
-**Completion log** — _status: ⬜ not started_
+**Completion log** — _status: 🟡 in progress_
 
 <!-- HANDOFF: what landed · acceptance evidence · host state left behind ·
      every decision/deviation/gotcha + exact name/value the next phase consumes -->

@@ -18,7 +18,7 @@ in iframes (documented on `chillweb.net`). Some services are still reached over 
   must be vendored locally to meet the offline requirement.
 - **REQ-PROXY-03 — HTTPS for plain-HTTP services.** Services reached over plain HTTP get HTTPS through
   Traefik. Where feasible, the direct `host:port` path is closed or bound to localhost.
-- **REQ-PROXY-04 — Certificates match the documented rule.** copilot-instructions §Internal Domain
+- **REQ-PROXY-04 — Certificates match the documented rule.** [`AGENTS.md`](../../AGENTS.md#internal-domain)
   says to use one `*.home-lan.net` wildcard. But
   [`traefik/docker-compose.yml:60-61`](../../traefik/docker-compose.yml) also requests `${FQDN}` and
   `*.${FQDN}` on each host, and service names are two levels deep (`adguard.furball.home-lan.net`),
@@ -52,5 +52,5 @@ QN-2, for the nginx route list and the plain-HTTP list.
 
 ## Notes for planning
 
-Run the crt.sh check from copilot-instructions §Internal Domain first. It shows which certs have
+Run the crt.sh check from [`AGENTS.md`](../../AGENTS.md#internal-domain) first. It shows which certs have
 actually been issued.

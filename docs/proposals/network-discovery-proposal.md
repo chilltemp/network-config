@@ -26,7 +26,7 @@ several unidentified devices.
 - **REQ-DISC-03 — DNS map.** Every AdGuard rewrite and the host it targets, the upstreams, which
   resolvers DHCP hands out, and how adguard-sync is set up. This feeds QN-6.
 - **REQ-DISC-04 — Exposure map.** WAN port forwards, UPnP, Tailscale nodes and ACLs, the Cloudflare
-  zone check from copilot-instructions §Internal Domain, and anything reachable from the internet.
+  zone check from [`AGENTS.md`](../../AGENTS.md#internal-domain), and anything reachable from the internet.
 - **REQ-DISC-05 — Drift.** Stacks that are deployed differently from this repo, and deployed stacks
   that are missing from it.
 - **REQ-DISC-06 — Sources kept.** Raw exports are kept in the format QN-1 chooses, with secrets

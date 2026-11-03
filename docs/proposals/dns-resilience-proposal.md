@@ -31,7 +31,7 @@ step by adguard-sync, so the cause isn't obvious. Candidates:
 ## Non-goals
 
 - Replacing AdGuard Home.
-- Public DNS records. These are forbidden by copilot-instructions §Internal Domain.
+- Public DNS records. These are forbidden by [`AGENTS.md`](../../AGENTS.md#internal-domain).
 - Stopping clients that bypass local DNS (DoH, iCloud Private Relay).
 
 ## Offline behavior

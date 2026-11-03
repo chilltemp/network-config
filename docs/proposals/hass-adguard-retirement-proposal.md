@@ -45,4 +45,4 @@ QN-18, which moves the IoT network onto the household servers.
 - Phase 0 spike: list what still points at this instance by reading its query log, then let that
   log go quiet for a set period before disabling it.
 - Home Assistant's own DNS setting must point at a household server before the add-on stops.
-- These changes touch a live host, so §Live-Host Safety in the planning rules applies.
+- These changes touch a live host, so [Live-Host Safety](../../.claude/rules/planning.md#live-host-safety) applies.

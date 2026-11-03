@@ -57,4 +57,4 @@ QN-2, for the DNS map, and QN-6, for the resolver list each VLAN receives.
 - Move one VLAN at a time, Guest or IoT in whichever order breaks least, and watch the query logs
   before moving the next. Phones and other Wi-Fi clients pick up new DNS only when their DHCP lease
   renews.
-- These changes touch live hosts, so §Live-Host Safety in the planning rules applies.
+- These changes touch live hosts, so [Live-Host Safety](../../.claude/rules/planning.md#live-host-safety) applies.

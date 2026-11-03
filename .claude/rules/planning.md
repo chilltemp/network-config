@@ -1,27 +1,28 @@
 ---
 description: "Use when a prompt names a QN-<n> queue id, when turning a proposal into a plan, when authoring or implementing a multi-phase plan in docs/plans/, or when reading/updating the implementation queue in docs/proposals/_implementation-order.md. Covers proposal-to-plan, phase structure, live-host safety, completion logs, and the queue table format."
-name: "Phased Plan Instructions"
-applyTo: "docs/plans/**, docs/proposals/_implementation-order.md"
+paths:
+  - 'docs/plans/**'
+  - 'docs/proposals/_implementation-order.md'
 ---
 
 # Phased Plan Guidelines
 
-- Start with the project-wide rules in [copilot-instructions.md](../copilot-instructions.md); its **Docs lifecycle** governs where plans live and when they archive.
-- This file governs the **internal structure** of a multi-phase plan, the protocol for working it, and the **implementation queue** — [`docs/proposals/_implementation-order.md`](../../docs/proposals/_implementation-order.md). See §The Implementation Queue.
-- Adapted from `karens-database` and `readingorder.info-2025`. The queue and `**Status:**` formats must stay compatible with the machine-wide `next-phase` and `adversarial-review` skills — [agent-skills/README.md](../../agent-skills/README.md) §What a repo must provide.
+- Start with the project-wide rules in [AGENTS.md](../../AGENTS.md); its [Docs Lifecycle](../../AGENTS.md#docs-lifecycle) governs where plans live and when they archive.
+- This file governs the **internal structure** of a multi-phase plan, the protocol for working it, and the **implementation queue** — [`docs/proposals/_implementation-order.md`](../../docs/proposals/_implementation-order.md). See [The Implementation Queue](#the-implementation-queue).
+- Adapted from `karens-database` and `readingorder.info-2025`. The queue and `**Status:**` formats must stay compatible with the machine-wide `next-phase` and `adversarial-review` skills — [agent-skills/README.md](../../agent-skills/README.md#what-a-repo-must-provide).
 
 ## From Proposal to Plan
 
-- Every queue row starts as a proposal ([proposals.instructions.md](proposals.instructions.md)). A planning session turns **one** proposal into a plan at `docs/plans/<topic>-plan.md`, then repoints the row's Item link to the plan. The proposal stays as the requirements doc; the plan links to it and cites its `REQ-` ids.
-- Resolve the proposal's open questions with the operator first (§Keep the Q&A → proposal → design split in proposals.instructions.md). ⛔ No plan while an open question would change its shape.
+- Every queue row starts as a proposal ([proposals.md](proposals.md)). A planning session turns **one** proposal into a plan at `docs/plans/<topic>-plan.md`, then repoints the row's Item link to the plan. The proposal stays as the requirements doc; the plan links to it and cites its `REQ-` ids.
+- Resolve the proposal's open questions with the operator first ([Keep the Q&A → Proposal → Design Split](proposals.md#keep-the-qa--proposal--design-split)). ⛔ No plan while an open question would change its shape.
 - ⛔ **One proposal per planning session.** Never plan several queue rows at once.
-- A proposal marked "single session" may be worked directly without a plan; its completion notes go in the proposal under a `## Outcome` heading. ⛔ §Live-Host Safety still applies in full: write its items into the Outcome **before** the change.
+- A proposal marked "single session" may be worked directly without a plan; its completion notes go in the proposal under a `## Outcome` heading. ⛔ [Live-Host Safety](#live-host-safety) still applies in full: write its items into the Outcome **before** the change.
 
 ## When This Applies
 
 - Plans with **≥2 phases**. Single-step plans need no completion logs.
 - Each phase = **one working session**, self-contained.
-- ⛔ **Exception: §Live-Host Safety applies to every live change**, with or without a plan.
+- ⛔ **Exception: [Live-Host Safety](#live-host-safety) applies to every live change**, with or without a plan.
 
 ## Phase Anatomy
 
@@ -55,8 +56,8 @@ The tell is mechanical, and it is in the plan text itself: **any acceptance crit
 
 ## Before Starting a Phase
 
-1. Read `copilot-instructions.md` + the scoped `*.instructions.md` for the area + [ai-lessons.md](../../docs/ai-lessons.md).
-2. Set the phase to 🟡 in the `**Status:**` header and its completion log (§Status Legend).
+1. Read `AGENTS.md` + the rule file for the area + [ai-lessons.md](../../docs/ai-lessons.md).
+2. Set the phase to 🟡 in the `**Status:**` header and its completion log ([Status Legend](#status-legend)).
 3. Read the **completion logs of all prior phases** — they carry the as-built shapes, decisions, and gotchas this phase depends on. **The plan text is the intent; the logs are the reality.**
 
 ## Before Ending a Phase (required)
@@ -65,9 +66,10 @@ The tell is mechanical, and it is in the plan text itself: **any acceptance crit
 2. Confirm the acceptance criteria with that evidence.
 3. **Write back the completion log:** set status → list what landed → paste evidence → write a **handoff**: every decision, deviation, gotcha, and exact name/value/path *as built* that a later phase consumes.
 4. If the plan text was wrong, fix the plan — not just the log.
-5. **Public-safety check:** the diff carries no secrets and no finding that belongs in the private docs home ([proposals.instructions.md](proposals.instructions.md) §Public safety).
+5. **Public-safety check:** the diff carries no secrets and no finding that belongs in the private docs home ([Public Safety](proposals.md#public-safety)).
 6. **A plan's last phase sweeps the lessons inbox once:** every [ai-lessons.md](../../docs/ai-lessons.md) entry the plan added is promoted or retired, with a one-line reason each in the log.
 7. **Update the plan's row in the implementation queue** if its status or its remaining phase changed — status symbol and Notes only, never a log excerpt.
+8. **Run the guard last**, after every closeout edit: `node tooling/agent-guard/check.mjs`, and `node --test tooling/agent-guard/check.test.mjs` if the guard changed. Paste the output in the log. ⛔ Nothing else runs it.
 
 ## Status Legend
 
@@ -134,7 +136,7 @@ Prettier-formatted.
   content, and lives in the linked doc. ⚠️ Trimming a cell is not deleting a fact: confirm the linked
   doc states it, in the same change. ⛔ Never write a negative state: no dependency list means no
   dependencies. An "open question" here is a decision the operator owes, not an unverified premise
-  — an unverified premise is a Phase 0 spike (§Premise Spikes), which lives in the plan.
+  — an unverified premise is a Phase 0 spike ([Premise Spikes](#premise-spikes-precondition-not-acceptance)), which lives in the plan.
 
 Three rules that shape the docs, not just the table:
 

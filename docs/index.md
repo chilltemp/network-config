@@ -7,12 +7,12 @@ re-scoped (path, section, status). Not auto-generated.
 
 - [`proposals/_implementation-order.md`](proposals/_implementation-order.md) — the to-do list: what
   to do next. Governed by
-  [`planning.instructions.md`](../.github/instructions/planning.instructions.md).
+  [`planning.md`](../.claude/rules/planning.md).
 
 ## Proposals
 
 Unbuilt work as `REQ-` requirements, governed by
-[`proposals.instructions.md`](../.github/instructions/proposals.instructions.md).
+[`proposals.md`](../.claude/rules/proposals.md).
 
 | Doc                                                                                           | Queue | Status   |
 | --------------------------------------------------------------------------------------------- | ----- | -------- |
@@ -59,6 +59,10 @@ docs home.
 ## Agent docs
 
 - [`ai-lessons.md`](ai-lessons.md) — lessons inbox; check it before implementing.
+- [`agents/qn-17-rule-ledger.md`](agents/qn-17-rule-ledger.md) — QN-17's rule ledger: where every
+  old rule went.
+- [`agents/rationale/`](agents/rationale/) — why each instruction file's rules exist, one file per
+  instruction file.
 
 ## Archive
 
