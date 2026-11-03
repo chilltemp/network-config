@@ -1,6 +1,6 @@
 # QN-17 — Agent instructions migration — plan
 
-**Status:** Phase 1 ✅ · Phase 2 ✅ · Phase 3 🟡 · Phase 4 ⬜
+**Status:** Phase 1 ✅ · Phase 2 ✅ · Phase 3 ✅ · Phase 4 ⬜
 
 Written 2026-11-01 from [agent-instructions-migration-proposal][proposal], which stays as the
 requirements doc (REQ-AGENT-01…10) and records the rulings. Queue row **QN-17**, sprint `current`.
@@ -697,10 +697,92 @@ out of memory.
 - `MEMORY.md` lists one note, and both promoted rules are in a file every agent loads.
 - `AGENTS.md`'s headroom against the working target is recorded.
 
-**Completion log** — _status: 🟡 in progress_
+**Completion log** — _status: ✅ done_ (2026-11-02)
 
-<!-- HANDOFF: what landed · acceptance evidence · host state left behind ·
-     every decision/deviation/gotcha + exact name/value the next phase consumes -->
+**What landed.** `.claude/rules/oversized-llm.md` and its rationale file, the sixth routing row, and `oversized-llm` in `REQUIRED_RULES` and the fixtures. History moved out of `planning.md` and `proposals.md` into real rationale entries. `AGENTS.md` gained the GitOps-mode practice and commit-to-`main`. Two memory notes are deleted after their text was copied to `agents.rationale.md`. The ledger's Phase 3 section has 265 rows and 20 carried rules. No host touched.
+
+**Operator picks at phase start.** Phase 2 was committed first, as `c27611f`. "Dormant" means the host: every rule still binds. The copies in `ansible-safety.md` and `compose-stack-conventions.md` are removed, with one pointer each. The history moves, the commit rule in §Agent Workflow and the core's queue sentence (now a link) took their defaults.
+
+**Decisions and deviations:**
+
+- **Three duplicate lines merged, not copied** (`editing.md` §Cross-Reference Discipline): "runtime model unchanged" (its "managed in Portainer" joined §Runtime), "Keep Ollama exposure constrained…" and "Keep Tailscale usage limited…". The plan said wording stays; intent does, and the ledger names each twin.
+- **`ansible-safety.md`'s `description:`** drops "firewall intent". The new routing row carries that trigger.
+- **Portainer memory claim:** the "API cannot enable GitOps" reason is unverified. A web check found only third-party tutorials, and they contradict it, showing `autoUpdate` on the repository-stack API call. The rationale says so. D20's practice is unaffected.
+- **Commit-to-`main` claim:** verified, 0 merge commits. The stale local and remote `add-forgejo-git-server` branch is untouched.
+- **`docs/proposals/oversized-llm-retirement-proposal.md`**: its §Why now names `oversized-llm.md`, so QN-11 starts from the right file.
+- **`Ansible/README.md` and `Ansible/playbooks/deploy_{ollama,portainer}.yml` still say "UI/API".** They are outside this phase's acceptance, and D20 rules out a mass edit.
+
+**Consumer audit.** Fresh `claude -p` sessions (Claude Code 2.1.316, default context window), one Read each; the `nested_memory` attachments in each transcript:
+
+```text
+ollama/docker-compose.yml            c9a2e895 → compose-stack-conventions.md, oversized-llm.md
+portainer/docker-compose.yml         a0a1ca6a → compose-stack-conventions.md, oversized-llm.md
+Ansible/roles/base/tasks/main.yml    c744b418 → oversized-llm.md, ansible-safety.md
+```
+
+Triggers that touch no file, all in the routing row: firewall, inbound ports, exposure, `OLLAMA_BIND_IP`, Tailscale.
+
+**Acceptance evidence:**
+
+```text
+# Guardrail grep of AGENTS.md (firewall, Tailscale, OLLAMA_BIND_IP, stack names, scope):
+77:| touch `Ansible/`, `ollama/` or `portainer/`, or a task names Oversized-LLM, `oversized`, Ollama, `OLLAMA_BIND_IP`, the Portainer Agent, Tailscale, the firewall, inbound ports or exposure | `.claude/rules/oversized-llm.md` |
+# (that one line is the routing row)
+
+# UI/API count
+AGENTS.md:0
+.claude/rules/compose-stack-conventions.md:0
+
+# Stack READMEs changed: 0
+# MEMORY.md: 1 note (prefers-zsh-scripts). Both promoted rules are in AGENTS.md.
+```
+
+**Headroom:** `AGENTS.md` is 125 lines and 12,000 B: 65 lines and 10,528 B under the working target.
+
+**Host state:** no host touched.
+
+**Handoff for Phase 4:**
+
+- The Phase 3 work is uncommitted, on top of `c27611f`. `git add -N` was used on the two new files.
+- `new-stack-readme`'s "Deployment in Portainer" section follows `AGENTS.md#portainer-gitops`.
+- `infra-reviewer`'s checks on firewall and exposure now map to `oversized-llm.md`, not to the core.
+- The inbox still holds its one QN-17 entry for Phase 4's sweep.
+
+**Final checks:**
+
+```text
+$ node tooling/agent-guard/check.mjs
+✓ plan-status
+✓ layout
+✓ frontmatter
+✓ retired-paths
+✓ links
+✓ anchors
+✓ inbox
+✓ citations
+✓ rationale
+✓ routing
+✓ core
+✓ at-rule
+✓ budgets
+✓ skills
+
+Rule file sizes (soft, never a failure):
+     12069 / 20000 ok   .claude/rules/editing.md
+     11760 / 20000 ok   .claude/rules/planning.md
+      5012 / 20000 ok   .claude/rules/proposals.md
+      1739 / 20000 ok   .claude/rules/oversized-llm.md
+      1267 / 20000 ok   .claude/rules/compose-stack-conventions.md
+      1026 / 20000 ok   .claude/rules/ansible-safety.md
+
+All checks passed.
+(exit 0)
+
+$ node --test tooling/agent-guard/check.test.mjs
+ℹ tests 148
+ℹ pass 148
+ℹ fail 0
+```
 
 ---
 

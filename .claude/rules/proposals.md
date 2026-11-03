@@ -49,7 +49,7 @@ section):
 - ⛔ **No secrets, public IPs, MAC addresses, serial numbers, license keys, Tailscale addresses, or
   WAN port-forward details.**
 - ⛔ **No troubleshooting or investigation logs that name household devices, people or LAN IPs.**
-  They go in `private/<repo path>` (QN-1 §Decisions, 2026-11-01).
+  They go in `private/<repo path>`. ([why](../../docs/agents/rationale/proposals.rationale.md#private-logs))
 - ✅ Hostnames, `home-lan.net` names ([Internal Domain](../../AGENTS.md#internal-domain)), product names, and the
   shape of the network are fine.
 - For a **named** host or service, state the requirement, never the installed state that makes it
@@ -60,7 +60,7 @@ section):
 
 ## Keep the Q&A → Proposal → Design Split
 
-The process that produced `karens-database`'s best artifact:
+Work a proposal in these steps: ([why](../../docs/agents/rationale/proposals.rationale.md#qa-split))
 
 1. **Ask.** Write questions inline in a `QA*.md` next to the proposal (or in the session), and let
    the operator answer them inline under each one. Answers may contradict earlier answers — keep the

@@ -6,9 +6,7 @@ The core rules for every agent in this repo. They override generic defaults.
 
 - This repository manages a multi-host homelab.
 - Most top-level service folders are standalone Docker Compose stacks for hosts other than Oversized-LLM.
-- Oversized-LLM active stack sources are [ollama](ollama) and [portainer](portainer).
-- Host prerequisites for Oversized-LLM are managed in [Ansible](Ansible).
-- Stack/container lifecycle is managed in Portainer (UI/API), not by Ansible.
+- Stack/container lifecycle is managed in Portainer, not by Ansible.
 
 ## Architecture
 
@@ -31,7 +29,7 @@ ansible-vault edit secrets/<file>.yml                                   # edit e
 ```
 
 - Encrypt secrets with ansible-vault and keep secret values out of plaintext files.
-- Stacks are deployed from the Portainer Stack UI/API using the `docker-compose.yml` in each service folder, not from the CLI.
+- <a id="portainer-gitops"></a>Stacks are deployed from the Portainer UI in GitOps (repository) mode, pointing at this repo and the `docker-compose.yml` in each service folder, with env vars entered in the UI, not from the CLI. A new stack's README, or one you touch, says this. ([why](docs/agents/rationale/agents.rationale.md#portainer-gitops))
 - After editing an instruction file, run the guard by hand: `node tooling/agent-guard/check.mjs`. Nothing runs it automatically.
 
 ## Collaboration Preference
@@ -49,7 +47,8 @@ ansible-vault edit secrets/<file>.yml                                   # edit e
 - Give each download its own new empty folder in `.tmp/`. `.tmp/` is disposable: anything worth keeping moves into a real doc.
 - **Lessons:** check [docs/ai-lessons.md](docs/ai-lessons.md) before implementing. After any user correction, capture the pattern there and promote a durable rule ([Lessons Inbox](.claude/rules/editing.md#lessons-inbox)).
 - **Verification before done:** prove it with evidence — command output, `dig`, screenshots, exports. Ask: "would a careful sysadmin sign off on this?"
-- **The queue:** [docs/proposals/_implementation-order.md](docs/proposals/_implementation-order.md) is the to-do list; ids are `QN-<n>`. A `QN-` row that names other hosts or stacks is the explicit request the Oversized-LLM scope guardrail asks for.
+- **The queue:** [docs/proposals/_implementation-order.md](docs/proposals/_implementation-order.md) is the to-do list; ids are `QN-<n>`. A `QN-` row that names other hosts or stacks is the explicit request the [Oversized-LLM scope guardrail](.claude/rules/oversized-llm.md#scope) asks for.
+- <a id="commit-to-main"></a>**Commit on `main`:** no feature branch, and only when the operator asks. Pushing needs its own explicit ask. ([why](docs/agents/rationale/agents.rationale.md#commit-to-main))
 - ⛔ **Wrong session:** queue ids are per repo — `QN-<n>` here, `QK-<n>` in `karens-database`, `QR-<n>` in `readingorder.info-2025`. An id with another repo's prefix, or one not in [the queue](docs/proposals/_implementation-order.md), means the wrong session. **Stop and say so; never look for a near match.**
 
 <a id="docs-lifecycle"></a>
@@ -75,6 +74,7 @@ Claude Code loads these automatically when you touch a matching file. If your to
 | edit `AGENTS.md`, `CLAUDE.md`, a rule, a rationale file, a repo skill, the guard or `docs/ai-lessons.md`, or are asked to codify a rule | `.claude/rules/editing.md` |
 | edit anything under `Ansible/`, or run a playbook or `ansible-vault` | `.claude/rules/ansible-safety.md` |
 | edit a stack's `docker-compose.yml`, or add a stack | `.claude/rules/compose-stack-conventions.md` |
+| touch `Ansible/`, `ollama/` or `portainer/`, or a task names Oversized-LLM, `oversized`, Ollama, `OLLAMA_BIND_IP`, the Portainer Agent, Tailscale, the firewall, inbound ports or exposure | `.claude/rules/oversized-llm.md` |
 
 ## Conventions
 
@@ -99,27 +99,10 @@ Claude Code loads these automatically when you touch a matching file. If your to
 - Certificate Transparency entries dated before 2024-09-27 (bare `home-lan.net` only, 2023-04 to 2024-05) belong to a previous registrant and are not part of this setup.
 - To check public exposure, run `dig +short @1.1.1.1 <name>.home-lan.net` (should return nothing) and search crt.sh for `%.home-lan.net` (should show only `home-lan.net` and `*.home-lan.net`).
 
-## Oversized-LLM Guardrails
-
-- Keep scope focused on Oversized-LLM unless explicitly asked to modify other stacks. A `QN-` queue row naming other hosts or stacks counts as that request.
-- Oversized-LLM should run only:
-  - `ollama_server`
-  - `portainer_agent`
-- Do not deploy a local Portainer Server on Oversized-LLM.
-- Keep Portainer Agent LAN-only and independent of Tailscale.
-- Use Tailscale only for Ollama access.
-- Preserve firewall intent in [Ansible/roles/base/tasks/main.yml](Ansible/roles/base/tasks/main.yml):
-  - SSH from management LAN only
-  - Ollama port from Tailscale subnet only
-  - Portainer Agent port from central Portainer Server LAN IP only
-  - deny other inbound traffic by default
-
 ## Change Safety Rules
 
 - Do not use Ansible to create/update/delete containers or stacks.
 - Do not reintroduce removed service-deployment roles/playbooks without explicit request.
-- Do not broaden Ollama exposure beyond Tailscale without explicit approval.
-- Preserve `OLLAMA_BIND_IP` behavior for Ollama unless explicitly asked to change it.
 - Do not commit plaintext secrets. Secret values live in `ansible-vault`-managed files. Repo `.env` and READMEs are reference-only (`.env` is gitignored).
 - Avoid mass-normalizing compose files unless explicitly requested.
 - Keep image pinning (no floating `latest`) unless explicitly requested.

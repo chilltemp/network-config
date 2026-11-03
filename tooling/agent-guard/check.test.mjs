@@ -95,7 +95,7 @@ function tempRepo() {
 }
 after(() => made.forEach((d) => rmSync(d, { recursive: true, force: true })));
 
-const RULES = ["ansible-safety", "compose-stack-conventions", "editing", "planning", "proposals"];
+const RULES = ["ansible-safety", "compose-stack-conventions", "editing", "oversized-llm", "planning", "proposals"];
 const rule = (topic) =>
   [
     "---",

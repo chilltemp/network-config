@@ -9,7 +9,7 @@ paths:
 
 - Start with the project-wide rules in [AGENTS.md](../../AGENTS.md); its [Docs Lifecycle](../../AGENTS.md#docs-lifecycle) governs where plans live and when they archive.
 - This file governs the **internal structure** of a multi-phase plan, the protocol for working it, and the **implementation queue** — [`docs/proposals/_implementation-order.md`](../../docs/proposals/_implementation-order.md). See [The Implementation Queue](#the-implementation-queue).
-- Adapted from `karens-database` and `readingorder.info-2025`. The queue and `**Status:**` formats must stay compatible with the machine-wide `next-phase` and `adversarial-review` skills — [agent-skills/README.md](../../agent-skills/README.md#what-a-repo-must-provide).
+- <a id="sibling-formats"></a>The queue and `**Status:**` formats must stay compatible with the machine-wide `next-phase` and `adversarial-review` skills — [agent-skills/README.md](../../agent-skills/README.md#what-a-repo-must-provide). ([why](../../docs/agents/rationale/planning.rationale.md#sibling-formats))
 
 ## From Proposal to Plan
 
@@ -45,14 +45,13 @@ Every change to a running host, service, DNS, DHCP, firewall or firmware states 
 
 ## Premise Spikes (precondition, not acceptance)
 
-**If a phase's premise is vendor or platform behaviour nobody here has verified (Unraid, Unifi, Traefik, AdGuard, Acronis, a container manager), the verification is a throwaway spike that runs FIRST — and the phase is not written until it passes.**
+**If a phase's premise is vendor or platform behaviour nobody here has verified (Unraid, Unifi, Traefik, AdGuard, Acronis, a container manager), the verification is a throwaway spike that runs FIRST — and the phase is not written until it passes.** ([why](../../docs/agents/rationale/planning.rationale.md#premise-spikes))
 
 The tell is mechanical, and it is in the plan text itself: **any acceptance criterion phrased as "verify that X behaves as assumed" is misfiled.** It is a precondition. Lift it out, make it Phase 0, and write the dependent phase only after it returns.
 
 - A Phase 0 spike changes **nothing on a live host**. Its output is a completion log.
 - Give it explicit pass/fail gates, and say in the plan what happens on each.
 - Read the vendor's docs or release notes for the **installed** version, not model memory.
-- Origin: `readingorder.info-2025` reverted a whole phase whose "verify on a production build" acceptance criterion failed after the build (`docs/archive/plans/timeline-toolbar-registry-plan.md` Phase 1 there).
 
 ## Before Starting a Phase
 

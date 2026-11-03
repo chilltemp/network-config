@@ -177,11 +177,12 @@ export const INBOX = "docs/ai-lessons.md";
 export const INBOX_MAX_LINES = 200;
 export const RATIONALE_DIR = "docs/agents/rationale/";
 
-/** Rule files that must exist. Phase 3 adds `oversized-llm`. */
+/** Rule files that must exist. */
 export const REQUIRED_RULES = [
   "ansible-safety",
   "compose-stack-conventions",
   "editing",
+  "oversized-llm",
   "planning",
   "proposals",
 ].map((t) => `.claude/rules/${t}.md`);

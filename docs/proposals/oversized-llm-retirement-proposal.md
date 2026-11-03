@@ -9,8 +9,7 @@ this repo's agent instructions
 
 The oversized-llm experiment is over: the hardware isn't adequate for a local LLM. The Linux side is
 still installed, but the machine only boots Windows now, so it always shows as offline. Meanwhile,
-most of this repo's agent instructions are Oversized-LLM guardrails (`AGENTS.md`,
-`.claude/rules/ansible-safety.md`). Ansible exists only for this host.
+this repo's agent instructions carry Oversized-LLM guardrails (`.claude/rules/oversized-llm.md`). Ansible exists only for this host.
 
 ## Requirements
 
