@@ -608,3 +608,60 @@ The rules added on 2026-11-01 (`b2fcd31`, `762734b`), each checked by text again
 | Planning rules, whole file | .claude/rules/planning.md | survived |
 | Proposal rules, whole file | .claude/rules/proposals.md | survived |
 | Editing rules, whole file | .claude/rules/editing.md | survived |
+
+## Phase 4 — Surfaces and closeout
+
+`planning.md` gains one line; `git diff` shows no other line changed, and `AGENTS.md`, `editing.md` and the other rule files are unchanged.
+
+### `.github/agents/infra-reviewer.agent.md`
+
+| Before | After | Rationale anchor | How |
+| ------ | ----- | ---------------- | --- |
+| Check 1 · Ansible changes remain provisioning-only | AGENTS.md §Change Safety Rules · ansible-safety.md | — | retired (D6) |
+| Check 2 · Ollama constrained to Tailscale | oversized-llm.md §Exposure | — | retired (D6) |
+| Check 2 · Portainer Agent LAN-only, not dependent on Tailscale | oversized-llm.md §Exposure | — | retired (D6) |
+| Check 3 · Firewall intent preserved | oversized-llm.md §Firewall | — | retired (D6) |
+| Check 4 · No plaintext secrets | AGENTS.md §Change Safety Rules · ansible-safety.md | — | retired (D6) |
+| Check 5 · Compose edits preserve env, labels, storage | compose-stack-conventions.md | — | retired (D6) |
+| Focus · regressions first, findings over summaries | `agent-skills/adversarial-review/reviewer.md` | — | retired (D6) |
+| Output format · severity, evidence, why | `agent-skills/adversarial-review/reviewer.md` | — | retired (D6) |
+
+### `.github/prompts/new-stack-readme.prompt.md`
+
+| Before | After | Rationale anchor | How |
+| ------ | ----- | ---------------- | --- |
+| `description`, `argument-hint` | `.agents/skills/new-stack-readme/SKILL.md` | — | kept |
+| `name: "New Stack README"` | `name: new-stack-readme` | — | changed (D10): a skill's name is its command |
+| `agent`, `tools` | — | — | retired (D10) |
+| Requirements, the section list, Before writing | SKILL.md | — | kept |
+| Deployment in Portainer | SKILL.md: the UI in GitOps mode, linked to `AGENTS.md#portainer-gitops` | agents.rationale.md#portainer-gitops | changed (D20) |
+| "workspace guardrails" | SKILL.md: links to `AGENTS.md` | — | changed (D10) |
+
+### `.github/hooks/block-plaintext-secrets.json.DISABLED`
+
+| Before | After | Rationale anchor | How |
+| ------ | ----- | ---------------- | --- |
+| Deny tool input matching a secret pattern (disabled) | AGENTS.md §Change Safety Rules · ansible-safety.md | — | retired (D11) |
+
+### `docs/ai-lessons.md`
+
+| Before | After | Rationale anchor | How |
+| ------ | ----- | ---------------- | --- |
+| QN-17 · Before a plan names a command, run it once | planning.md §Authoring Rule | planning.rationale.md#run-named-commands | moved |
+
+### Surface dispositions (as built)
+
+| Surface | Outcome | Phase | Now |
+| ------- | ------- | ----- | --- |
+| `CLAUDE.md` | Merged | 2 | `@AGENTS.md` plus three notes |
+| `.github/copilot-instructions.md` | Merged | 2 | `AGENTS.md` |
+| `.github/instructions/ansible-safety.instructions.md` | Moved | 2 | `.claude/rules/ansible-safety.md` |
+| `.github/instructions/compose-stack-conventions.instructions.md` | Moved | 2 | `.claude/rules/compose-stack-conventions.md` |
+| `.github/instructions/editing.instructions.md` | Moved | 2 | `.claude/rules/editing.md` |
+| `.github/instructions/planning.instructions.md` | Moved | 2 | `.claude/rules/planning.md` |
+| `.github/instructions/proposals.instructions.md` | Moved | 2 | `.claude/rules/proposals.md` |
+| `infra-reviewer` agent | Retired (D6) | 4 | Deleted; its checks are mapped above |
+| `new-stack-readme` prompt | Converted (D10) | 4 | `.agents/skills/new-stack-readme/` and its `.claude/skills/` link |
+| Disabled secrets hook | Retired (D11) | 4 | Deleted; the rule stays |
+| `.vscode/settings.json` | Unchanged (D4) | — | `cSpell.words` only |
+| `_IDEAS_/ai-instructions/` | Unchanged | — | Reference-only |

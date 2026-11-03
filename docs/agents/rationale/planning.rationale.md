@@ -19,3 +19,11 @@ This file was adapted from `karens-database` and `readingorder.info-2025`. The s
 **Rule:** [planning.md §Premise Spikes](../../../.claude/rules/planning.md#premise-spikes-precondition-not-acceptance)
 
 Origin: `readingorder.info-2025` reverted a whole phase whose "verify on a production build" acceptance criterion failed after the build (`docs/archive/plans/timeline-toolbar-registry-plan.md` Phase 1 there).
+
+<a id="run-named-commands"></a>
+
+## Run a command before a plan names it
+
+**Rule:** [planning.md §Authoring Rule](../../../.claude/rules/planning.md#run-named-commands)
+
+QN-17's plan review found two commands that would have failed the plan's own acceptance checks: `node --test <dir>` exits `MODULE_NOT_FOUND` on Node 24, and `next-phase --dry-run` refuses while a phase is 🟡. Both worked as written in some other state. Promoted from the lessons inbox in QN-17 Phase 4.

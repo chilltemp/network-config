@@ -228,6 +228,9 @@ const MUTATIONS = {
     ["an untracked *.instructions.md", (r) => r.write("docs/old.instructions.md", "x\n")],
     ["a non-.md file in .claude/rules/", (r) => r.write(".claude/rules/notes.txt", "x\n")],
     ["a retired surface", (r) => r.write(".github/copilot-instructions.md", "x\n")],
+    ["a retired .github/agents", (r) => r.write(".github/agents/x.agent.md", "x\n")],
+    ["a retired .github/prompts", (r) => r.write(".github/prompts/x.prompt.md", "x\n")],
+    ["a retired .github/hooks", (r) => r.write(".github/hooks/x.json", "x\n")],
   ],
   frontmatter: [
     ["a flow-list paths:", (r) => r.edit(".claude/rules/planning.md", "paths:\n  - 'planning/**'", "paths: ['planning/**']")],
@@ -622,8 +625,14 @@ describe("retired paths", () => {
     ["AGENTS.md", "`planning.instructions`"],
     ["agent-skills/README.md", "read `editing.instructions.md`"],
     ["docs/index.md", "## Plans\n| row | `.github/instructions/` |"],
+    ["docs/proposals/y-proposal.md", "`.github/agents/infra-reviewer.agent.md`"],
+    ["AGENTS.md", "see `.github/prompts/`"],
+    ["docs/plans/b-plan.md", "the `.github/hooks` folder"],
   ])
     it(`fails on ${file}`, () => assert.notDeepEqual(retiredPathHits(file, text), []));
+
+  for (const text of ["`.github/workflows/ci.yml`", "https://nvidia.github.io/agents", "`.github/agents-old/`"])
+    it(`accepts ${text}`, () => assert.deepEqual(retiredPathHits("docs/plans/b-plan.md", text), []));
 
   for (const file of [
     "docs/archive/plans/old-plan.md",

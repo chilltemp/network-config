@@ -187,11 +187,22 @@ export const REQUIRED_RULES = [
   "proposals",
 ].map((t) => `.claude/rules/${t}.md`);
 
-/** Retired instruction surfaces. Phase 4 adds `.github/agents`, `.github/prompts`, `.github/hooks`. */
-export const RETIRED_SURFACES = [".github/copilot-instructions.md", ".github/instructions"];
+/** Retired instruction surfaces. */
+export const RETIRED_SURFACES = [
+  ".github/copilot-instructions.md",
+  ".github/instructions",
+  ".github/agents",
+  ".github/prompts",
+  ".github/hooks",
+];
 
 /** Retired paths in any spelling: full path, basename, no `.md`. */
-export const RETIRED_PATTERNS = [/copilot-instructions/, /\.instructions\b/, /\.github\/instructions/];
+export const RETIRED_PATTERNS = [
+  /copilot-instructions/,
+  /\.instructions\b/,
+  /\.github\/instructions/,
+  /\.github\/(?:agents|prompts|hooks)(?![\w-])/,
+];
 
 /** History keeps the paths that were true when it was written (D13). */
 const HISTORY_PREFIXES = ["docs/archive/", "docs/handoffs/", "_IDEAS_/"];

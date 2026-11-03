@@ -109,5 +109,8 @@ history set and the guard's own files keep them.
 | ------- | ----------- |
 | `.github/copilot-instructions.md` | `AGENTS.md` |
 | `.github/instructions/*.instructions.md` (five files) | `.claude/rules/*.md` |
+| `.github/agents/` (`infra-reviewer`) | Its rules, reported by `adversarial-review` |
+| `.github/prompts/` (`new-stack-readme`) | The `new-stack-readme` repo skill |
+| `.github/hooks/` (the disabled secrets hook) | The plaintext-secrets rule in `AGENTS.md` |
 | `CLAUDE.md`'s restatement of the core | `@AGENTS.md` on line 1, then Claude-only notes |
 | `applyTo:` and `name:` frontmatter | `description:` and a `paths:` block list |

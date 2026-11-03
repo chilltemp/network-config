@@ -28,7 +28,7 @@ in the same change — never deleting the row on its own.
 
 | #     | Item                                                                                       | Sprint  | Status         | Notes                                                                    |
 | ----- | ------------------------------------------------------------------------------------------ | ------- | -------------- | ------------------------------------------------------------------------ |
-| QN-17 | [`plans/agent-instructions-migration-plan`](../plans/agent-instructions-migration-plan.md) | current | 🟡 partial     | Next: Phase 4 — surfaces and closeout                                    |
+| QN-17 | [`plans/agent-instructions-migration-plan`](../plans/agent-instructions-migration-plan.md) | current | ✅ complete    |                                                                          |
 | QN-1  | [`proposals/network-documentation-proposal`](network-documentation-proposal.md)            | current | ⬜ not started | Open: private home (GitHub, Forgejo, both)? LLM wiki or plain docs?      |
 | QN-2  | [`proposals/network-discovery-proposal`](network-discovery-proposal.md)                    | current | ⬜ not started | Blocked: QN-1. Open: may discovery run active LAN scans?                 |
 | QN-3  | [`proposals/furball-boot-ssd-proposal`](furball-boot-ssd-proposal.md)                      | current | ⬜ not started | Open: installed Unraid version; is the SSD internal or USB-attached?     |

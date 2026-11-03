@@ -4,6 +4,8 @@
 `.github/instructions/*.instructions.md`, `.github/agents/`, `.github/prompts/`, `.github/hooks/`,
 `.vscode/settings.json`, `docs/ai-lessons.md`, this repo's entries in operator memory
 
+**Status:** Implemented 2026-11-02. The [plan](../plans/agent-instructions-migration-plan.md)'s Phase 4 log maps each requirement to its evidence.
+
 ## Why
 
 This repo's rules use the layout that treats GitHub Copilot as the primary agent:

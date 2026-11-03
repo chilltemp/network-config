@@ -1,6 +1,6 @@
 # QN-17 — Agent instructions migration — plan
 
-**Status:** Phase 1 ✅ · Phase 2 ✅ · Phase 3 ✅ · Phase 4 ⬜
+**Status:** Phase 1 ✅ · Phase 2 ✅ · Phase 3 ✅ · Phase 4 ✅
 
 Written 2026-11-01 from [agent-instructions-migration-proposal][proposal], which stays as the
 requirements doc (REQ-AGENT-01…10) and records the rulings. Queue row **QN-17**, sprint `current`.
@@ -794,8 +794,8 @@ $ node --test tooling/agent-guard/check.test.mjs
 
 1. **`infra-reviewer` (D6).** Delete it. The ledger maps its five checks to their rules.
 2. **`new-stack-readme` (D10).** Convert it to `.agents/skills/new-stack-readme/SKILL.md`, with a
-   `.claude/skills/new-stack-readme` link to `../../.agents/skills/new-stack-readme`. Keep `name`,
-   `description` and `argument-hint`; drop `agent` and `tools`. Point it at `AGENTS.md`, and make its
+   `.claude/skills/new-stack-readme` link to `../../.agents/skills/new-stack-readme`. `name` becomes
+   `new-stack-readme`; keep `description` and `argument-hint`; drop `agent` and `tools`. Point it at `AGENTS.md`, and make its
    "Deployment in Portainer" section follow D20.
 3. **Hook (D11).** Delete it. `.github/` is now empty.
 4. **Guard.** Add the three retired `.github/` paths to `layout` and `retired-paths`, and sweep any
@@ -813,10 +813,112 @@ $ node --test tooling/agent-guard/check.test.mjs
 - Every REQ-AGENT-01…10 is mapped to the phase and evidence that met it.
 - The queue row reads ✅ complete, with empty Notes.
 
-**Completion log** — _status: ⬜ not started_
+**Completion log** — _status: ✅ done_ (2026-11-02)
 
-<!-- HANDOFF: what landed · acceptance evidence · host state left behind ·
-     every decision/deviation/gotcha + exact name/value the next phase consumes -->
+**What landed.** `infra-reviewer`, the `new-stack-readme` prompt and the disabled hook are gone, and `.github/` no longer exists. `.agents/skills/new-stack-readme/SKILL.md` and its `.claude/skills/` link replace the prompt. The guard rejects the three `.github/` paths. The ledger maps the retired checks and closes with the as-built dispositions. The inbox is empty. No host touched.
+
+**Operator picks at phase start.** Phase 3 was committed first, as `d88f90a`, after its review came back with no findings. The inbox entry is promoted, not retired.
+
+**Inbox sweep:**
+
+| Entry | Outcome | Reason |
+| ----- | ------- | ------ |
+| QN-17: run a command before a plan names it | Promoted to [planning.md](../../.claude/rules/planning.md#run-named-commands) | Claim re-checked: `node --test tooling/agent-guard/` still exits `MODULE_NOT_FOUND` on Node 24.20.0. Durable: it applies to every plan |
+
+**Decisions and deviations:**
+
+- **The skill's `name` changed** from `New Stack README` to `new-stack-readme`, because the name is the command the acceptance criterion runs. The plan text is fixed.
+- **The retired-path pattern ends in `(?![\w-])`, not `\b`.** A new fixture showed `\b` also rejects `.github/agents-old/`. Unrelated `.github/` paths such as `workflows` stay allowed.
+- **`retired-paths` matches the `.github/` paths only,** as Build step 4 says. The bare words `infra-reviewer` and `new-stack-readme` are not retired: the second is the skill's name. A sweep found no live reference to any of the three surfaces.
+- **`editing.rationale.md`'s retired-surfaces table** gains the three paths.
+- **The proposal's status** is a `**Status:**` line under its `**Queue:**` line, because the proposal format has no status field. `docs/index.md` marks it `Implemented`. The plan stays `Active` there, and the queue row stays, until the operator asks to archive them.
+- **`docs/index.md` gains no row:** a skill is not a doc in `docs/`.
+
+**REQ map:**
+
+| Requirement | Met in | Evidence |
+| ----------- | ------ | -------- |
+| REQ-AGENT-01 Same layout | 2 | Twelve-session transcript table, `layout` and `core` checks |
+| REQ-AGENT-02 Every surface has a disposition | 2, 4 | Ledger §Surface dispositions (as built) |
+| REQ-AGENT-03 No silent rule drops | 2, 3, 4 | Ledger; `rationale` check. Phase 2 and 3 reviews found none |
+| REQ-AGENT-04 History out of rule text | 3 | Rationale entries with both-way links; `rationale` check |
+| REQ-AGENT-05 Budgets | 2, 3 | `budgets` check; `AGENTS.md` is 125 lines, 12,000 B; soft table below |
+| REQ-AGENT-06 Rules match reality | 3 | `oversized-llm.md` marked dormant; consumer audit; Portainer rules unchanged in intent |
+| REQ-AGENT-07 Repo rules out of memory | 3 | `MEMORY.md` lists one note; both rules in `AGENTS.md` |
+| REQ-AGENT-08 Tool settings | 2, 4 | Codex rollout quoting the routing table; `.vscode` unchanged, below |
+| REQ-AGENT-09 Kept honest | 1, 4 | `check.mjs`, 157 fixtures, below |
+| REQ-AGENT-10 Carried rules | 3 | Ledger §Carried rules, 20 rows |
+
+**Findings for the siblings (D21), none applied:**
+
+- Both could take [the promoted rule](../../.claude/rules/planning.md#run-named-commands). Neither was checked for an equivalent.
+- `karens-database`'s `rationale.ts` has no reference-style handling in a text search, so a `[why][w]` link may escape its pairing check, as it did here (Phase 1 review, M3). Not tested there.
+
+**Acceptance evidence:**
+
+```text
+$ ls -d .github
+ls: .github: No such file or directory
+
+$ git ls-files .vscode _IDEAS_ | shasum     # 11 files; the same hash at 762734b and now
+9044b5362e7afc4fbf2e074691647100c7478982
+
+# Claude Code 2.1.316, claude -p, prompt on stdin: /new-stack-readme forgejo …
+# session 2e31b13e, transcript:
+command-name>/new-stack-readme<
+Base directory for this skill: /Users/chill/github/network-config/.claude/skills/new-stack-readme
+
+# Codex 0.166.0, codex exec --sandbox read-only, rollout-2026-11-02T20-46-15-01a19f15-…
+- new-stack-readme: Create or refresh a stack README for a top-level compose service using this repo's conventions.
+function_call: 0  custom_tool_call: 0     (the Phase 2 control applies)
+
+# Live references to the retired surfaces, outside the history set and the guard's own files:
+(none, except the new rows in the rationale table, which is history by design)
+```
+
+**Host state:** no host touched.
+
+**Handoff:**
+
+- Phase 4 is uncommitted, on top of `d88f90a`. `git add -N` was used on the skill and its link.
+- ⚠️ The operator still runs `/adversarial-review phase QN-17`. Accepted fixes land under *Review fixes* here, then the final checks run again.
+- Archiving this plan, its proposal and the ledger is an operator request. It then removes the three `NAMED_EXEMPTIONS` in `check.mjs`, because the guard fails on a stale one.
+
+**Final checks:**
+
+```text
+$ node tooling/agent-guard/check.mjs
+✓ plan-status
+✓ layout
+✓ frontmatter
+✓ retired-paths
+✓ links
+✓ anchors
+✓ inbox
+✓ citations
+✓ rationale
+✓ routing
+✓ core
+✓ at-rule
+✓ budgets
+✓ skills
+
+Rule file sizes (soft, never a failure):
+     12069 / 20000 ok   .claude/rules/editing.md
+     11966 / 20000 ok   .claude/rules/planning.md
+      5012 / 20000 ok   .claude/rules/proposals.md
+      1739 / 20000 ok   .claude/rules/oversized-llm.md
+      1267 / 20000 ok   .claude/rules/compose-stack-conventions.md
+      1026 / 20000 ok   .claude/rules/ansible-safety.md
+
+All checks passed.
+(exit 0)
+
+$ node --test tooling/agent-guard/check.test.mjs
+ℹ tests 157
+ℹ pass 157
+ℹ fail 0
+```
 
 ---
 

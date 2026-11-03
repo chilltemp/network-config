@@ -84,6 +84,8 @@ The tell is mechanical, and it is in the plan text itself: **any acceptance crit
 
 Every multi-phase plan **embeds this protocol inline** — a `**Status:**` header, a short "How to work this plan" section + the per-phase skeleton below — so the rules travel with the plan (self-enforcing). Reuse the status legend above; do not invent a new one.
 
+<a id="run-named-commands"></a>**Before a plan names a command, run it once, in the state the phase will be in at that step.** ([why](../../docs/agents/rationale/planning.rationale.md#run-named-commands))
+
 ## Status Header (once per plan)
 
 The plan's first line after its `#` title. ⛔ **The line starts `**Status:**` and lists every phase as `Phase <id> <mark>`, in order** — the `next-phase` and `adversarial-review` skills parse exactly that.

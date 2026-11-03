@@ -16,7 +16,7 @@ Unbuilt work as `REQ-` requirements, governed by
 
 | Doc                                                                                           | Queue | Status   |
 | --------------------------------------------------------------------------------------------- | ----- | -------- |
-| [`agent-instructions-migration-proposal`](proposals/agent-instructions-migration-proposal.md) | QN-17 | Proposal |
+| [`agent-instructions-migration-proposal`](proposals/agent-instructions-migration-proposal.md) | QN-17 | Implemented |
 | [`network-documentation-proposal`](proposals/network-documentation-proposal.md)               | QN-1  | Proposal |
 | [`network-discovery-proposal`](proposals/network-discovery-proposal.md)                       | QN-2  | Proposal |
 | [`furball-boot-ssd-proposal`](proposals/furball-boot-ssd-proposal.md)                         | QN-3  | Proposal |
